@@ -1,3 +1,6 @@
+mod a1;
+use a1::{answer as first_answer};
+
 fn main() {
-    println!("Hello, world!");
+     first_answer()
 }
