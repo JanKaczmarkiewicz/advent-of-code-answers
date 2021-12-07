@@ -1,5 +1,4 @@
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+use crate::utils::read_lines;
 
 fn count_one_increase(numbers: &Vec<u16>) -> u16{
     let mut previous = numbers.first().unwrap();
@@ -24,15 +23,8 @@ fn count_three_increase(numbers: &Vec<u16>) -> u16 {
 
 
 pub fn answer() {
-    let file = File::open("src/a1/input").unwrap();
-    let reader = BufReader::new(file);
-
-    let numbers: Vec<u16> = reader.lines().map(
-        | raw_num|
-            match raw_num {
-                Ok(n) => n.parse().unwrap(),
-                _ => 0
-            }
+    let numbers: Vec<u16> = read_lines("src/a1/input").map(
+        | line| line.parse().unwrap(),
     ).collect();
 
     let first_answer = count_one_increase(&numbers);
