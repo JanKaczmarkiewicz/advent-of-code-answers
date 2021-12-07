@@ -1,6 +1,12 @@
 mod a1;
-use a1::{answer as first_answer};
+mod a2;
+mod a3;
+
+mod utils;
+
 
 fn main() {
-     first_answer()
+     a1::answer();
+     a2::answer();
+     a3::answer();
 }
