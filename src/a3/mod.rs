@@ -77,5 +77,5 @@ fn b() -> u32 {
 
 
 pub fn answer() {
-    println!("Answer to problem 2: {}, {}", a(), b());
+    println!("Answer to problem 3: {}, {}", a(), b());
 }
