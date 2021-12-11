@@ -25,10 +25,51 @@ fn check_bingo(current_numbers: &[u8], board: &Vec<u8>) -> bool {
     false
 }
 
-fn a() -> u32 {
+
+fn calculate_board_score(board: &Vec<u8>, current_bingo_numbers: &[u8]) -> u32 {
+    return board
+        .iter()
+        .filter(|x| !current_bingo_numbers.contains(x))
+        .fold(0_u32, |prev, x| {
+            prev + *x as u32
+        });
+}
+
+fn a(boards: &Vec<Vec<u8>>, all_bingo_numbers: &Vec<u8>) -> u32 {
+    let mut i = BOARD_SIZE;
+    loop {
+        let current_bingo_numbers = &all_bingo_numbers[0..i];
+        for board in boards {
+            if check_bingo(current_bingo_numbers, board) {
+                let score = calculate_board_score(board, current_bingo_numbers);
+
+                return all_bingo_numbers[i-1] as u32 * calculate_board_score(board, current_bingo_numbers);
+            };
+        }
+        i += 1;
+    }
+
+}
+
+fn b(boards: &Vec<Vec<u8>>, all_bingo_numbers: &Vec<u8>) -> u32 {
+    let mut i = all_bingo_numbers.len();
+
+    loop {
+        let current_bingo_numbers = &all_bingo_numbers[0..i];
+        for board in boards {
+            if !check_bingo(current_bingo_numbers, board) {
+                return all_bingo_numbers[i] as u32 * calculate_board_score(board, &all_bingo_numbers[0..i+1]);
+            };
+        }
+        i -= 1;
+    }
+}
+
+
+pub fn answer() {
     let lines = read_lines("src/a4/input")
         .collect::<Vec<_>>();
-    let board_vertical_size = 5+1;
+    let board_vertical_size = BOARD_SIZE+1;
 
     let boards_count = (lines.len() - 1) / board_vertical_size;
 
@@ -45,30 +86,5 @@ fn a() -> u32 {
         }).collect::<Vec<_>>()
     }).collect::<Vec<_>>();
 
-    let mut i = BOARD_SIZE;
-    let mut result_points = 0;
-    'find_bingo: loop {
-        let current_bingo_numbers = &all_bingo_numbers[0..i];
-        for board in &boards {
-            if check_bingo(current_bingo_numbers, board) {
-                result_points = all_bingo_numbers[i-1] as u32 * board
-                    .iter()
-                    .filter(|x| !current_bingo_numbers.contains(x))
-                    .fold(0_u32, |prev, x| {
-                        prev + *x as u32
-                    });
-                break 'find_bingo;
-            };
-        }
-        i += 1;
-    }
-
-
-    return result_points;
-}
-
-
-
-pub fn answer() {
-    println!("Answer to problem 4: {}", a());
+    println!("Answer to problem 4: {}, {}", a(&boards, &all_bingo_numbers), b(&boards, &all_bingo_numbers));
 }
