@@ -2,6 +2,7 @@ mod a1;
 mod a2;
 mod a3;
 mod a4;
+mod a5;
 
 mod utils;
 
@@ -11,4 +12,5 @@ fn main() {
      a2::answer();
      a3::answer();
      a4::answer();
+     a5::answer();
 }
