@@ -8,7 +8,7 @@ pub fn answer() {
             x.parse::<u16>().unwrap())
         .collect::<Vec<_>>();
 
-    for i in 0..256 {
+    for i in 0..80 {
         let mut new_spawns: i32 = 0;
 
         fishes = fishes.iter().map(|&x|
