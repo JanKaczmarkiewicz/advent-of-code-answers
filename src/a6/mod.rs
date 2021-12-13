@@ -1,31 +1,27 @@
 use crate::utils::read;
 
-pub fn answer() {
+fn simulate_lanternfish_population(days: u16) -> u128 {
     let content = read("src/a6/input");
-    let mut fishes = content
+    let mut fish_iter = content
         .split(",")
         .map(|x|
-            x.parse::<u16>().unwrap())
-        .collect::<Vec<_>>();
+            x.parse::<u128>().unwrap());
 
-    for i in 0..80 {
-        let mut new_spawns: i32 = 0;
-
-        fishes = fishes.iter().map(|&x|
-            if x == 0 {
-                new_spawns += 1;
-                6
-            } else {
-                x - 1
-            }
-        ).collect::<Vec<_>>();
-
-        let mut new_fishes = (0..new_spawns).map(|x| 8).collect::<Vec<_>>();
-
-        fishes.append(&mut new_fishes);
-        println!("{}", i);
+    let mut fish = vec![0,0,0,0,0,0,0,0,0];
+    for fish_value in fish_iter {
+        fish[fish_value as usize] += 1;
     }
 
+    for _ in 0..days {
+        let removed = fish.remove(0);
 
-    println!("Answer to problem 6: {}", fishes.len());
+        fish[6] += removed;
+        fish.push( removed);
+    }
+
+    fish.iter().fold(0_u128, |prev,curr| prev+curr)
+}
+
+pub fn answer() {
+    println!("Answer to problem 6: {}, {}", simulate_lanternfish_population(80), simulate_lanternfish_population(256));
 }
