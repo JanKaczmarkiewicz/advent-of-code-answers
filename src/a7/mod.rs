@@ -17,6 +17,22 @@ fn a() -> u128 {
     crabs.iter().fold(0, |prev, curr| prev  + (median - curr).abs() as u128)
 }
 
+fn b() -> i64 {
+    let mut crabs = read("src/a7/input")
+        .split(",")
+        .map(|x| x.parse::<i64>().unwrap())
+        .collect::<Vec<_>>();
+
+    let sum = crabs.iter().fold(0, |prev , curr | prev + curr) as i64;
+
+    let average = (sum as f64 / crabs.len() as f64).floor() as i64;
+
+    crabs.iter().fold(0_i64, |prev, &curr| {
+        let n = (average - curr).abs() as i64;
+        prev + n * (1 + n) / 2
+    })
+}
+
 pub fn answer() {
-    println!("Answer to problem 7: {}", a());
+    println!("Answer to problem 7: {}, {}", a(), b());
 }
