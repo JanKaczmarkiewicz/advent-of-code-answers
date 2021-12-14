@@ -7,7 +7,7 @@ mod a4;
 mod a5;
 mod a6;
 mod a7;
-
+mod a8;
 
 
 fn main() {
@@ -17,5 +17,6 @@ fn main() {
      a4::answer();
      a5::answer();
      a6::answer();
-     a7 ::answer();
+     a7::answer();
+     a8::answer();
 }
