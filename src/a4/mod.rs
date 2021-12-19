@@ -41,9 +41,7 @@ fn a(boards: &Vec<Vec<u8>>, all_bingo_numbers: &Vec<u8>) -> u32 {
         let current_bingo_numbers = &all_bingo_numbers[0..i];
         for board in boards {
             if check_bingo(current_bingo_numbers, board) {
-                let score = calculate_board_score(board, current_bingo_numbers);
-
-                return all_bingo_numbers[i-1] as u32 * calculate_board_score(board, current_bingo_numbers);
+                return  all_bingo_numbers[i-1] as u32 * calculate_board_score(board, current_bingo_numbers);
             };
         }
         i += 1;

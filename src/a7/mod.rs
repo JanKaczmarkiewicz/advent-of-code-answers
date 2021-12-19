@@ -18,7 +18,7 @@ fn a() -> u128 {
 }
 
 fn b() -> i64 {
-    let mut crabs = read("src/a7/input")
+    let crabs = read("src/a7/input")
         .split(",")
         .map(|x| x.parse::<i64>().unwrap())
         .collect::<Vec<_>>();

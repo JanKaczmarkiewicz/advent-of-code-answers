@@ -1,7 +1,6 @@
 use std::cmp;
 use crate::utils::read_lines;
 use std::collections::HashMap;
-use std::iter;
 
 pub fn count_overlaps(point_criteria: fn ((i32, i32, i32, i32)) -> Vec<(i32, i32)>) -> usize {
     let points = read_lines("src/a5/input")
@@ -28,7 +27,7 @@ pub fn count_overlaps(point_criteria: fn ((i32, i32, i32, i32)) -> Vec<(i32, i32
 
     contacts
         .iter()
-        .map(|(key, value)| value)
+        .map(|(_key, value)| value)
         .filter(|&&value| value > 1)
         .count()
 }

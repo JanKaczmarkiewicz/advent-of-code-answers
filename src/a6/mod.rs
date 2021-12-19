@@ -2,7 +2,7 @@ use crate::utils::read;
 
 fn simulate_lanternfish_population(days: u16) -> u128 {
     let content = read("src/a6/input");
-    let mut fish_iter = content
+    let fish_iter = content
         .split(",")
         .map(|x|
             x.parse::<u128>().unwrap());
