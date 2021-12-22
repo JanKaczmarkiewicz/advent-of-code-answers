@@ -97,4 +97,8 @@ mod tests {
         assert_eq!(a(), 370407);
     }
 
+    #[test]
+    fn should_solve_second_problem() {
+        assert_eq!(b(), 3249889609);
+    }
 }
