@@ -65,19 +65,19 @@ fn b() -> usize {
         let directions = vec![(x, y - 1), (x, y + 1), (x + 1, y), (x - 1, y)];
 
         for (x, y) in directions {
-            if get_cell_safe(x, y, matrix) != 9 && points.iter().find(|(currX, currY)| *currX == x && *currY == y).is_none() {
+            if get_cell_safe(x, y, matrix) != 9 && points.iter().find(|(curr_x, curr_y)| *curr_x == x && *curr_y == y).is_none() {
                 traverse_basin(x, y, matrix, points);
             }
         }
     }
 
-    let basinSizes =  find_critical_points(&matrix).iter().map(|(x, y)| {
+    let basin_sizes =  find_critical_points(&matrix).iter().map(|(x, y)| {
         let mut points = vec![];
         traverse_basin(*x, *y, &matrix, &mut points);
         points.len()
     }).sorted().collect::<Vec<_>>();
 
-    basinSizes[basinSizes.len() - 1] * basinSizes[basinSizes.len() - 2] * basinSizes[basinSizes.len() - 3]
+    basin_sizes[basin_sizes.len() - 1] * basin_sizes[basin_sizes.len() - 2] * basin_sizes[basin_sizes.len() - 3]
 }
 
 pub fn answer() {
