@@ -30,7 +30,7 @@ fn find_critical_points(matrix: &Vec<Vec<u32>>) -> Vec<(i32, i32)> {
             let y = i as i32;
             let x = j as i32;
 
-            let cell = get_cell_safe(x, y, &matrix);
+            let cell = cell as i32;
 
             let top_cell = get_cell_safe(x, y - 1, &matrix);
             let bottom_cell = get_cell_safe(x, y + 1, &matrix);
@@ -82,4 +82,20 @@ fn b() -> usize {
 
 pub fn answer() {
     println!("Answer to problem 9: {} {}", a(), b());
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_solve_first_problem() {
+        assert_eq!(a(), 270);
+    }
+
+    #[test]
+    fn should_solve_second_problem() {
+        assert_eq!(b(), 1092012);
+    }
 }
