@@ -106,6 +106,6 @@ mod tests {
 
     #[test]
     fn should_solve_second_problem() {
-        assert_eq!(a(), 502);
+        assert_eq!(b(), 502);
     }
 }
