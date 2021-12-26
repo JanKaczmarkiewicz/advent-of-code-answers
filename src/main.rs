@@ -11,6 +11,7 @@ mod a8;
 mod a9;
 mod a10;
 mod a11;
+mod a12;
 
 
 fn main() {
@@ -25,4 +26,5 @@ fn main() {
      a9::answer();
      a10::answer();
      a11::answer();
+     a12::answer();
 }
