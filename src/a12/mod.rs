@@ -3,7 +3,7 @@ use itertools::Itertools;
 use crate::utils::read_lines;
 
 fn read_caves() -> HashMap<String, Vec<String>> {
-    let mut caves = HashMap::new();
+    let mut caves: HashMap<String, Vec<String>> = HashMap::new();
 
     for line in read_lines("src/a12/input") {
         let params = line.split("-").collect::<Vec<&str>>();
