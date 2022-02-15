@@ -1,5 +1,3 @@
-use itertools::Itertools;
-
 use crate::utils::read_lines;
 
 fn perform_folds(arr: &mut Vec<Vec<bool>>, instructions: &[(String, usize)]) {
