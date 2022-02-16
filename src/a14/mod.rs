@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use itertools::Itertools;
 use crate::utils::read_lines;
 
-fn a() -> u32 {
+fn perform_instructions(times: usize) -> u64 {
     let lines = read_lines("src/a14/input").collect::<Vec<_>>();
 
     let mut instructions = HashMap::new();
@@ -12,7 +12,7 @@ fn a() -> u32 {
         instructions.insert(instruction_parts[0], instruction_parts[1]);
     }
 
-    let mut template = HashMap::new();
+    let mut template:HashMap<String, u64> = HashMap::new();
 
     let initial_template = lines[0].to_owned();
 
@@ -22,7 +22,7 @@ fn a() -> u32 {
             *template.entry(String::from(part)).or_insert(0) += 1;
         });
 
-    for _i in 0..10 {
+    for _i in 0..times {
         let mut result_template = HashMap::new();
 
         for (key, value) in &template {
@@ -55,7 +55,7 @@ fn a() -> u32 {
 
     let (min, max) = chars
         .iter()
-        .map(|(_key, value)| ((*value as f32) / 2 as f32).ceil() as u32)
+        .map(|(_key, value)| ((*value as f64) / 2 as f64).ceil() as u64)
         .minmax()
         .into_option()
         .unwrap();
@@ -64,17 +64,22 @@ fn a() -> u32 {
 }
 
 pub fn answer() {
-    println!("Answer to problem 14: {}", a());
+    println!("Answer to problem 14: {} {}", perform_instructions(10), perform_instructions(40));
 }
 
 
 #[cfg(test)]
 mod tests {
-    use super::{a};
+    use super::{perform_instructions};
 
     #[test]
     fn should_solve_first_problem() {
-        assert_eq!(a(), 3009);
+        assert_eq!(perform_instructions(10), 3009);
+    }
+
+    #[test]
+    fn should_solve_second_problem() {
+        assert_eq!(perform_instructions(40), 3459822539451);
     }
 
 }
