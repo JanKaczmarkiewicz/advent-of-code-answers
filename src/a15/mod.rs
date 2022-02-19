@@ -39,7 +39,6 @@ impl Ord for Node {
     }
 }
 
-// TODO: optimize - it takes 2minutes
 fn lowest_risk() -> i32 {
     let map = get_map();
 
@@ -55,18 +54,14 @@ fn lowest_risk() -> i32 {
     });
 
     while let Some(Node { pos: (x, y), cost }) = not_visited.pop() {
-        let x = x;
-        let y = y;
-        let cost = cost;
-
         visited.insert((x, y));
+
         if (x, y) == destination {
             return cost;
         }
 
         for (x_mod, y_mod) in [(0, -1), (-1, 0), (1, 0), (0, 1)] {
             let next = (x + x_mod, y + y_mod);
-
             if visited.contains(&next) {
                 continue;
             };
