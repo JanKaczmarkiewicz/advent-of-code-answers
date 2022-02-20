@@ -13,14 +13,6 @@ fn get_map() -> Vec<Vec<i32>> {
         .collect::<Vec<_>>()
 }
 
-fn get_tile_cost(map: &Vec<Vec<i32>>, (x, y): (i32, i32)) -> Option<i32> {
-    if x < map.len() as i32 && x >= 0 && y < map.len() as i32 && y >= 0 {
-        Some(map[x as usize][y as usize])
-    } else {
-        None
-    }
-}
-
 #[derive(Copy, Clone, Eq, PartialEq)]
 struct Node {
     cost: i32,
@@ -39,13 +31,12 @@ impl Ord for Node {
     }
 }
 
-fn lowest_risk() -> i32 {
-    let map = get_map();
-
-    let destination = (map.len() as i32 - 1, map.len() as i32 - 1);
-
+fn lowest_risk(
+    map: Vec<Vec<i32>>,
+    destination: (i32, i32),
+    get_cost: fn(&Vec<Vec<i32>>, (i32, i32)) -> Option<i32>,
+) -> i32 {
     let mut visited = HashSet::new();
-
     let mut not_visited = BinaryHeap::new();
 
     not_visited.push(Node {
@@ -54,6 +45,9 @@ fn lowest_risk() -> i32 {
     });
 
     while let Some(Node { pos: (x, y), cost }) = not_visited.pop() {
+        if visited.contains(&(x, y)) {
+            continue;
+        };
         visited.insert((x, y));
 
         if (x, y) == destination {
@@ -66,7 +60,7 @@ fn lowest_risk() -> i32 {
                 continue;
             };
 
-            if let Some(next_cost) = get_tile_cost(&map, next) {
+            if let Some(next_cost) = get_cost(&map, next) {
                 let sum_cost = cost + next_cost;
                 not_visited.push(Node {
                     pos: next,
@@ -79,16 +73,66 @@ fn lowest_risk() -> i32 {
     return 0;
 }
 
+fn a() -> i32 {
+    let map = get_map();
+    let destination = (map.len() as i32 - 1, map.len() as i32 - 1);
+    lowest_risk(map, destination, |map, (x, y)| {
+        if x < map.len() as i32 && x >= 0 && y < map.len() as i32 && y >= 0 {
+            Some(map[x as usize][y as usize])
+        } else {
+            None
+        }
+    })
+}
+
+fn b() -> i32 {
+    let map = get_map();
+    let destination = ((map.len() * 5) as i32 - 1, (map.len() * 5) as i32 - 1);
+    lowest_risk(map, destination, |map, (x, y)| {
+        let max = (5 * map.len()) as i32;
+
+        if x.is_negative() {
+            return None;
+        }
+        if y.is_negative() {
+            return None;
+        }
+        if x >= max {
+            return None;
+        }
+        if y >= max {
+            return None;
+        }
+
+        let modificator =
+            ((x as f32 / map.len() as f32).floor() + (y as f32 / map.len() as f32).floor()) as i32;
+
+        let mut cost =
+            ((modificator + map[x as usize % map.len()][y as usize % map.len()] - 1) % 9) + 1;
+
+        if cost == 0 {
+            cost += 1;
+        }
+
+        Some(cost)
+    })
+}
+
 pub fn answer() {
-    println!("{}", lowest_risk());
+    println!("Answer to problem 15: {} {}", a(), b());
 }
 
 #[cfg(test)]
 mod tests {
-    use super::lowest_risk;
+    use super::{a, b};
 
     #[test]
     fn should_solve_first_problem() {
-        assert_eq!(lowest_risk(), 592);
+        assert_eq!(a(), 592);
+    }
+
+    #[test]
+    fn should_solve_second_problem() {
+        assert_eq!(b(), 243);
     }
 }
