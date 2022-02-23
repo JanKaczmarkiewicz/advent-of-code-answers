@@ -1,8 +1,8 @@
 use crate::utils::read;
-use std::num::ParseIntError;
+use std::cell::Cell;
 
-fn str_binary_to_number(text: &str) -> Result<i32, ParseIntError> {
-    i32::from_str_radix(text, 2)
+fn str_binary_to_number(text: &str) -> i32 {
+    i32::from_str_radix(text, 2).unwrap()
 }
 
 fn hex_char_to_str_binary(c: char) -> &'static str {
@@ -27,55 +27,97 @@ fn hex_char_to_str_binary(c: char) -> &'static str {
     }
 }
 
+const VERSION_SIZE: usize = 3;
+const TYPE_ID_SIZE: usize = 3;
+const LITERAL_FRAME_SIZE: usize = 5;
+const OPERATION_LENGTH_ID_SIZE: usize = 1;
+const OPERATION_LENGTH_SIZE: usize = 15;
+
 fn a() -> i32 {
     let bytes = read("src/a16/input")
         .chars()
         .map(hex_char_to_str_binary)
         .collect::<String>();
 
-    let mut offset: usize = 0;
+    let offset = Cell::new(0);
     let mut result = vec![];
 
-    let mut read_next_bytes = |amount: usize| {
-        let fragment = &bytes[offset..offset + amount];
-        offset += amount;
+    let read_next_bytes = |amount: usize| {
+        let offset_value = offset.get();
+        let offset_next_value = offset_value + amount;
+        let fragment = &bytes[offset_value..offset_value + offset_next_value];
+        offset.set(offset_next_value);
         return fragment;
     };
 
-    const VERSION_SIZE: usize = 3;
-    const TYPE_ID_SIZE: usize = 3;
-    const LITERAL_FRAME_SIZE: usize = 5;
-    const LITERAL_FRAME_MULTIPLE_SIZE: usize = 4;
+    let read_header = || {
+        let version_id = str_binary_to_number(read_next_bytes(VERSION_SIZE));
+        let type_id = str_binary_to_number(read_next_bytes(TYPE_ID_SIZE));
 
-    let version_id = str_binary_to_number(read_next_bytes(VERSION_SIZE)).unwrap();
-    let type_id = str_binary_to_number(read_next_bytes(TYPE_ID_SIZE)).unwrap();
+        return (version_id, type_id);
+    };
 
-    match type_id {
-        0 | 1 => {}
-        4 => {
-            let mut values = vec![];
+    let read_zeros = || loop {
+        let offset_value = offset.get();
+        let next_character = &bytes[offset_value..1 + offset_value];
 
-            loop {
-                let frame = read_next_bytes(LITERAL_FRAME_SIZE);
-                values.push(&frame[1..]);
-                if frame.starts_with("0") {
-                    break;
+        if next_character == "0" {
+            read_next_bytes(1);
+        } else {
+            break;
+        }
+    };
+
+    let x = 10;
+    let y = &mut x;
+    let z = &mut x;
+
+    print!("{}, {}, {}", y, z, x);
+
+    let read_literal = || {
+        let mut values = vec![];
+
+        loop {
+            let frame = read_next_bytes(LITERAL_FRAME_SIZE);
+            values.push(&frame[1..]);
+            if frame.starts_with("0") {
+                break;
+            }
+        }
+
+        str_binary_to_number(&values.join(""));
+    };
+
+    let mut read_package = || {
+        let (version_id, type_id) = read_header();
+
+        match type_id {
+            4 => {
+                result.push((version_id, type_id, read_literal()));
+            }
+            _ => {
+                let length_type_id = read_next_bytes(OPERATION_LENGTH_ID_SIZE);
+
+                match length_type_id {
+                    "0" => {}
+                    "1" => {
+                        let length = str_binary_to_number(read_next_bytes(OPERATION_LENGTH_SIZE));
+                        let target_length = offset.get() + length as usize;
+
+                        while offset.get() != target_length {
+                            read_package();
+                        }
+                    }
+                    _ => {}
                 }
             }
-
-            // literal data frame can contain empty bits at the end (LITERAL_FRAME_MULTIPLE_SIZE alignment)
-            let read_bits = values.len() * LITERAL_FRAME_SIZE + VERSION_SIZE + TYPE_ID_SIZE;
-            let align = LITERAL_FRAME_MULTIPLE_SIZE - (read_bits % LITERAL_FRAME_MULTIPLE_SIZE);
-            read_next_bytes(align);
-
-            result.push((
-                version_id,
-                type_id,
-                str_binary_to_number(&values.join("")).unwrap(),
-            ));
-        }
-        n => panic!("Unsupported type {}", n),
+        };
+        read_zeros();
     };
+
+    while bytes.len() != offset.get() {
+        read_package();
+    }
 
     0
 }
