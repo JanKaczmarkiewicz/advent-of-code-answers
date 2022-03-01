@@ -27,6 +27,102 @@ fn hex_char_to_str_binary(c: char) -> &'static str {
     }
 }
 
+struct PacketsReader {
+    offset: Cell<usize>,
+    bytes: String,
+    result: Vec<(i32, i32, i32)>,
+}
+
+impl PacketsReader {
+    fn new(bytes: String) -> Self {
+        Self {
+            offset: Cell::new(0),
+            bytes,
+            result: vec![],
+        }
+    }
+
+    fn read_next_bytes(&self, amount: usize) -> &str {
+        let offset_value = self.offset.get();
+        let offset_next_value = offset_value + amount;
+        let fragment = &self.bytes[offset_value..offset_next_value];
+        self.offset.set(offset_next_value);
+        return fragment;
+    }
+
+    fn read_header(&self) -> (i32, i32) {
+        let version_id_raw = self.read_next_bytes(VERSION_SIZE);
+        let version_id = str_binary_to_number(version_id_raw);
+
+        let type_id_raw = self.read_next_bytes(TYPE_ID_SIZE);
+        let type_id = str_binary_to_number(type_id_raw);
+
+        return (version_id, type_id);
+    }
+
+    fn read_zeros(&self) {
+        loop {
+            let offset_value = self.offset.get();
+            let next_character = self.bytes.get(offset_value..1 + offset_value);
+
+            if let Some("0") = next_character {
+                self.read_next_bytes(1);
+            } else {
+                break;
+            }
+        }
+    }
+
+    fn read_literal(&self) -> i32 {
+        let mut values = vec![];
+
+        loop {
+            let frame = self.read_next_bytes(LITERAL_FRAME_SIZE);
+            values.push(&frame[1..]);
+            if frame.starts_with("0") {
+                break;
+            }
+        }
+
+        str_binary_to_number(&values.join(""))
+    }
+
+    fn read_next_package(&mut self) {
+        let (version_id, type_id) = self.read_header();
+
+        match type_id {
+            4 => {
+                self.result.push((version_id, type_id, self.read_literal()));
+            }
+            _ => {
+                let length_type_id = self.read_next_bytes(OPERATION_LENGTH_ID_SIZE);
+
+                match length_type_id {
+                    "1" => {}
+                    "0" => {
+                        let length =
+                            str_binary_to_number(self.read_next_bytes(OPERATION_LENGTH_SIZE));
+                        let target_length = self.offset.get() + length as usize;
+
+                        while self.offset.get() != target_length {
+                            self.read_next_package();
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        };
+    }
+
+    pub fn read_all_packages(&mut self) -> &Vec<(i32, i32, i32)> {
+        while self.bytes.len() != self.offset.get() {
+            self.read_next_package();
+            self.read_zeros();
+        }
+        return &self.result;
+    }
+}
+
 const VERSION_SIZE: usize = 3;
 const TYPE_ID_SIZE: usize = 3;
 const LITERAL_FRAME_SIZE: usize = 5;
@@ -39,87 +135,11 @@ fn a() -> i32 {
         .map(hex_char_to_str_binary)
         .collect::<String>();
 
-    let offset = Cell::new(0);
-    let mut result = vec![];
+    let mut packets_reader = PacketsReader::new(bytes);
 
-    let read_next_bytes = |amount: usize| {
-        let offset_value = offset.get();
-        let offset_next_value = offset_value + amount;
-        let fragment = &bytes[offset_value..offset_value + offset_next_value];
-        offset.set(offset_next_value);
-        return fragment;
-    };
+    let res = packets_reader.read_all_packages();
 
-    let read_header = || {
-        let version_id = str_binary_to_number(read_next_bytes(VERSION_SIZE));
-        let type_id = str_binary_to_number(read_next_bytes(TYPE_ID_SIZE));
-
-        return (version_id, type_id);
-    };
-
-    let read_zeros = || loop {
-        let offset_value = offset.get();
-        let next_character = &bytes[offset_value..1 + offset_value];
-
-        if next_character == "0" {
-            read_next_bytes(1);
-        } else {
-            break;
-        }
-    };
-
-    let x = 10;
-    let y = &mut x;
-    let z = &mut x;
-
-    print!("{}, {}, {}", y, z, x);
-
-    let read_literal = || {
-        let mut values = vec![];
-
-        loop {
-            let frame = read_next_bytes(LITERAL_FRAME_SIZE);
-            values.push(&frame[1..]);
-            if frame.starts_with("0") {
-                break;
-            }
-        }
-
-        str_binary_to_number(&values.join(""));
-    };
-
-    let mut read_package = || {
-        let (version_id, type_id) = read_header();
-
-        match type_id {
-            4 => {
-                result.push((version_id, type_id, read_literal()));
-            }
-            _ => {
-                let length_type_id = read_next_bytes(OPERATION_LENGTH_ID_SIZE);
-
-                match length_type_id {
-                    "0" => {}
-                    "1" => {
-                        let length = str_binary_to_number(read_next_bytes(OPERATION_LENGTH_SIZE));
-                        let target_length = offset.get() + length as usize;
-
-                        while offset.get() != target_length {
-                            read_package();
-                        }
-                    }
-                    _ => {}
-                }
-            }
-        };
-        read_zeros();
-    };
-
-    while bytes.len() != offset.get() {
-        read_package();
-    }
-
-    0
+    res.len() as i32
 }
 
 pub fn answer() {
