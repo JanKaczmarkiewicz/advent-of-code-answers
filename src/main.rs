@@ -30,6 +30,7 @@ fn main() {
     a10::answer();
     a11::answer();
     a12::answer();
+    a13::answer();
     a14::answer();
     a15::answer();
     a16::answer();

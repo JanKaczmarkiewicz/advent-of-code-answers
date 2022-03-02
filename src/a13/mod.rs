@@ -110,7 +110,7 @@ mod tests {
 
     #[test]
     fn should_solve_first_problem() {
-        assert_eq!(a(), 4304);
+        assert_eq!(a(), 675);
     }
 
     #[test]

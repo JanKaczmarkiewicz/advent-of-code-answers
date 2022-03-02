@@ -133,6 +133,6 @@ mod tests {
 
     #[test]
     fn should_solve_second_problem() {
-        assert_eq!(b(), 243);
+        assert_eq!(b(), 2897);
     }
 }
