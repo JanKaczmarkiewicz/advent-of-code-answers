@@ -31,23 +31,33 @@ fn a() -> u64 {
         .map(hex_char_to_str_binary)
         .collect::<String>();
 
-    let mut pr = PacketsReader::new(bytes);
+    PacketsReader::new(bytes).read_all_packages().0
+}
 
-    let res = pr.read_all_packages();
+fn b() -> u64 {
+    let bytes = read("src/a16/input")
+        .chars()
+        .map(hex_char_to_str_binary)
+        .collect::<String>();
 
-    res.iter().map(|pack| pack.0).sum()
+    PacketsReader::new(bytes).read_all_packages().1
 }
 
 pub fn answer() {
-    println!("Answer to problem 15: {}", a());
+    println!("Answer to problem 16: {} {}", a(), b());
 }
 
 #[cfg(test)]
 mod tests {
-    use super::a;
+    use super::{a, b};
 
     #[test]
     fn should_solve_first_problem() {
         assert_eq!(a(), 908);
+    }
+
+    #[test]
+    fn should_solve_second_problem() {
+        assert_eq!(b(), 10626195124371);
     }
 }

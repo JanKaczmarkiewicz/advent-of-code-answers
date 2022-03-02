@@ -14,7 +14,6 @@ fn str_binary_to_number(text: &str) -> u64 {
 pub struct PacketsReader {
     offset: Cell<usize>,
     bytes: String,
-    result: Vec<(u64, u64, u64)>,
 }
 
 impl PacketsReader {
@@ -22,7 +21,6 @@ impl PacketsReader {
         Self {
             offset: Cell::new(0),
             bytes,
-            result: vec![],
         }
     }
 
@@ -71,49 +69,85 @@ impl PacketsReader {
         str_binary_to_number(&values.join(""))
     }
 
-    fn read_next_package(&mut self) {
+    fn read_next_package(&mut self) -> (u64, u64) {
         let (version_id, type_id) = self.read_header();
 
-        match type_id {
-            4 => {
-                self.result.push((version_id, type_id, self.read_literal()));
+        if 4 == type_id {
+            return (version_id, self.read_literal());
+        }
+
+        let length_type_id = self.read_next_bytes(OPERATION_LENGTH_ID_SIZE);
+
+        let mut sub_packages = vec![];
+
+        match length_type_id {
+            "1" => {
+                let length = str_binary_to_number(self.read_next_bytes(SUBPACKETS_NUMBER_SIZE));
+
+                for _ in 0..length {
+                    sub_packages.push(self.read_next_package());
+                }
+            }
+            "0" => {
+                let length = str_binary_to_number(self.read_next_bytes(OPERATION_LENGTH_SIZE));
+                let target_length = self.offset.get() + length as usize;
+
+                while self.offset.get() != target_length {
+                    sub_packages.push(self.read_next_package());
+                }
             }
             _ => {
-                let length_type_id = self.read_next_bytes(OPERATION_LENGTH_ID_SIZE);
-
-                match length_type_id {
-                    "1" => {
-                        let length =
-                            str_binary_to_number(self.read_next_bytes(SUBPACKETS_NUMBER_SIZE));
-
-                        for _ in 0..length {
-                            self.read_next_package();
-                        }
-                    }
-                    "0" => {
-                        let length =
-                            str_binary_to_number(self.read_next_bytes(OPERATION_LENGTH_SIZE));
-                        let target_length = self.offset.get() + length as usize;
-
-                        while self.offset.get() != target_length {
-                            self.read_next_package();
-                        }
-                    }
-                    _ => {
-                        panic!("Not possible")
-                    }
-                }
-
-                self.result.push((version_id, type_id, 0));
+                panic!("Not possible")
             }
         };
+
+        let sub_packages_values = sub_packages
+            .iter()
+            .map(|(_, value)| *value)
+            .collect::<Vec<_>>();
+        let sub_packages_versions_sum: u64 = sub_packages.iter().map(|(version, _)| *version).sum();
+
+        let value = match type_id {
+            0 => sub_packages_values.iter().sum(),
+            1 => sub_packages_values.iter().fold(1, |acc, curr| acc * curr),
+            2 => sub_packages_values.iter().min().unwrap().to_owned(),
+            3 => sub_packages_values.iter().max().unwrap().to_owned(),
+            5 => {
+                if sub_packages_values[0] > sub_packages_values[1] {
+                    1
+                } else {
+                    0
+                }
+            }
+            6 => {
+                if sub_packages_values[1] > sub_packages_values[0] {
+                    1
+                } else {
+                    0
+                }
+            }
+            7 => {
+                if sub_packages_values[1] == sub_packages_values[0] {
+                    1
+                } else {
+                    0
+                }
+            }
+            _ => panic!("Operation not possible"),
+        };
+
+        (sub_packages_versions_sum + version_id, value)
     }
 
-    pub fn read_all_packages(&mut self) -> &Vec<(u64, u64, u64)> {
+    pub fn read_all_packages(&mut self) -> (u64, u64) {
+        let mut sum = 0;
+        let mut version_sum = 0;
         while self.bytes.len() != self.offset.get() {
-            self.read_next_package();
+            let (version, value) = self.read_next_package();
+            version_sum += version;
+            sum += value;
             self.read_zeros();
         }
-        return &self.result;
+        return (version_sum, sum);
     }
 }
