@@ -48,6 +48,6 @@ mod tests {
 
     #[test]
     fn should_solve_first_problem() {
-        assert_eq!(a(), 592);
+        assert_eq!(a(), 908);
     }
 }
