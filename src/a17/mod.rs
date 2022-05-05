@@ -50,7 +50,7 @@ fn get_possible_x(config: &Config) -> Vec<i32> {
 }
 
 fn get_possible_y(config: &Config) -> Vec<i32> {
-    (0..(-1 * config.start_y))
+    (config.start_y..(-1 * config.start_y))
         .filter(|y| {
             let mut current = 0;
             let mut velocity = *y;
@@ -108,22 +108,68 @@ fn get_highest_y(config: &Config) -> i32 {
         .unwrap()
 }
 
+fn get_number_of_possible_pairs(config: &Config) -> usize {
+    let possible_x = get_possible_x(config);
+    let possible_y = get_possible_y(config);
+
+    let mut number_of_possible_pairs = 0;
+
+    for y in possible_y {
+        for x in &possible_x {
+            let mut current_x = 0;
+            let mut velocity_x = *x;
+
+            let mut current_y = 0;
+            let mut velocity_y = y;
+
+            while current_y >= config.start_y && current_x <= config.end_x {
+                if (config.start_y..=config.end_y).contains(&current_y)
+                    && (config.start_x..=config.end_x).contains(&current_x)
+                {
+                    number_of_possible_pairs += 1;
+                    break;
+                }
+                current_x += velocity_x;
+                if velocity_x != 0 {
+                    velocity_x -= 1;
+                }
+
+                current_y += velocity_y;
+                velocity_y -= 1;
+            }
+        }
+    }
+
+    return number_of_possible_pairs;
+}
+
 fn a() -> i32 {
     let config = get_config();
 
     get_highest_y(&config)
 }
 
+fn b() -> usize {
+    let config = get_config();
+
+    get_number_of_possible_pairs(&config)
+}
+
 pub fn answer() {
-    println!("Answer to problem 17: {:?}", a());
+    println!("Answer to problem 17: {}, {}", a(), b());
 }
 
 #[cfg(test)]
 mod tests {
-    use super::a;
+    use super::{a, b};
 
     #[test]
     fn should_solve_first_problem() {
         assert_eq!(a(), 6903);
+    }
+
+    #[test]
+    fn should_solve_second_problem() {
+        assert_eq!(b(), 2351);
     }
 }
