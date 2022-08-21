@@ -1,12 +1,13 @@
 mod data;
-mod explode;
-mod split;
+mod reduce;
 use crate::{a18::data::Data, utils::read};
+use reduce::reduce;
 
 fn a() -> i32 {
     let result = read("src/a18/input")
         .lines()
         .flat_map(serde_json::from_str::<Data>)
+        .map(reduce)
         .collect::<Vec<_>>();
 
     println!("{:?}", result);

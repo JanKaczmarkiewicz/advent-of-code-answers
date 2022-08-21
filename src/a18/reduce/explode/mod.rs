@@ -1,12 +1,12 @@
 mod find_explosion_index;
 mod reset_at;
 mod to_vec_mut;
-use super::data::Data;
+use super::super::data::Data;
 use find_explosion_index::find_explosion_index;
 use reset_at::reset_at;
 use to_vec_mut::to_vec_mut;
 
-fn explode(data: &mut Data) -> bool {
+pub fn explode(data: &mut Data) -> bool {
     if let Some(index_to_explode) = find_explosion_index(data) {
         let index_to_explode = index_to_explode;
 
@@ -83,11 +83,11 @@ mod tests {
 
     #[test]
     fn five() {
-        let mut input = parse("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]");
+        let mut input = parse("[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]");
 
         let result = explode(&mut input);
 
         assert!(result);
-        assert_eq!(input, parse("[[3,[2,[8,0]]],[9,[5,[7,0]]]]"));
+        assert_eq!(input, parse("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"));
     }
 }

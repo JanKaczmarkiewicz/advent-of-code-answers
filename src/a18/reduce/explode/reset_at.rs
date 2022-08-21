@@ -3,10 +3,10 @@ use crate::a18::data::Data;
 pub fn reset_at(d: &mut Data, index: usize) {
     let mut current_index = 0;
 
-    reset_at_inner(d, index, &mut current_index)
+    reset_at_inner(d, index, &mut current_index);
 }
 
-fn reset_at_inner(d: &mut Data, index: usize, current_index: &mut usize) {
+fn reset_at_inner(d: &mut Data, index: usize, current_index: &mut usize) -> bool {
     match d {
         Data::Pair(pair) => {
             let left = &mut pair.0;
@@ -15,17 +15,18 @@ fn reset_at_inner(d: &mut Data, index: usize, current_index: &mut usize) {
             if *current_index == index {
                 if let (Data::Integer(_), Data::Integer(_)) = (&left, &right) {
                     *d = Data::Integer(0);
-                    return;
+                    return true;
                 }
             }
 
-            reset_at_inner(left, index, current_index);
-            reset_at_inner(right, index, current_index);
+            return reset_at_inner(left, index, current_index)
+                || reset_at_inner(right, index, current_index);
         }
         Data::Integer(_) => {
             *current_index += 1;
         }
     }
+    false
 }
 
 #[cfg(test)]

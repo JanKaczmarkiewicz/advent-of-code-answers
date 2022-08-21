@@ -1,6 +1,6 @@
-use super::data::Data;
+use super::super::data::Data;
 
-fn split(data: &mut Data) -> bool {
+pub fn split(data: &mut Data) -> bool {
     match data {
         Data::Pair(pair) => split(&mut pair.0) || split(&mut pair.1),
         Data::Integer(n) => {

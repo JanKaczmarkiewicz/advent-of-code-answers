@@ -24,7 +24,7 @@ fn find_explosion_index_inner(d: &Data, depth: usize, index: &mut i32) -> bool {
         }
     }
 
-    return false;
+    false
 }
 
 pub fn find_explosion_index(d: &Data) -> Option<usize> {
