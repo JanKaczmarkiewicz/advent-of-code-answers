@@ -70,7 +70,7 @@ fn lowest_risk(
         }
     }
 
-    return 0;
+    0
 }
 
 fn a() -> i32 {

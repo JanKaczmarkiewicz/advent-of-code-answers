@@ -15,7 +15,7 @@ fn get_config() -> Config {
     let result = str::replace(&result, "..", ",");
 
     let mut coordinates = result
-        .split(",")
+        .split(',')
         .map(|num_raw| num_raw.parse::<i32>().unwrap());
 
     let start_x = coordinates.next().unwrap();
@@ -44,13 +44,13 @@ fn get_possible_x(config: &Config) -> Vec<i32> {
                 current += velocity;
                 velocity -= 1;
             }
-            return false;
+            false
         })
         .collect::<Vec<_>>()
 }
 
 fn get_possible_y(config: &Config) -> Vec<i32> {
-    (config.start_y..(-1 * config.start_y))
+    (config.start_y..-config.start_y)
         .filter(|y| {
             let mut current = 0;
             let mut velocity = *y;
@@ -62,7 +62,7 @@ fn get_possible_y(config: &Config) -> Vec<i32> {
                 current += velocity;
                 velocity -= 1;
             }
-            return false;
+            false
         })
         .rev()
         .collect::<Vec<_>>()
@@ -103,7 +103,7 @@ fn get_highest_y(config: &Config) -> i32 {
                     }
                 }
             }
-            return None;
+            None
         })
         .unwrap()
 }
@@ -140,7 +140,7 @@ fn get_number_of_possible_pairs(config: &Config) -> usize {
         }
     }
 
-    return number_of_possible_pairs;
+    number_of_possible_pairs
 }
 
 fn a() -> i32 {

@@ -1,19 +1,15 @@
-use itertools::Itertools;
 use crate::utils::read_lines;
+use itertools::Itertools;
 
-fn get_line_error_score(line: &String) -> u32 {
-    let chars = line
-        .chars()
-        .collect::<Vec<_>>();
+fn get_line_error_score(line: &str) -> u32 {
+    let chars = line.chars().collect::<Vec<_>>();
 
     let mut error_score = 0;
     let mut opened = vec![];
 
     for char in chars {
         match char {
-            '{' | '<' | '(' | '[' => {
-                opened.push(char)
-            }
+            '{' | '<' | '(' | '[' => opened.push(char),
             ']' => {
                 if opened.pop().unwrap() != '[' {
                     error_score += 57;
@@ -50,16 +46,18 @@ fn b() -> u64 {
     let sorted_result = read_lines("src/a10/input")
         .filter(|line| get_line_error_score(line) == 0)
         .map(|line| {
-            let chars = line
-                .chars()
-                .collect::<Vec<_>>();
+            let chars = line.chars().collect::<Vec<_>>();
 
             let mut opened = vec![];
 
             for char in chars {
                 match char {
-                    '{' | '<' | '(' | '[' => { opened.push(char); },
-                    ']' | '}' | '>' | ')' => { opened.pop(); },
+                    '{' | '<' | '(' | '[' => {
+                        opened.push(char);
+                    }
+                    ']' | '}' | '>' | ')' => {
+                        opened.pop();
+                    }
                     _ => {}
                 }
             }
@@ -74,19 +72,16 @@ fn b() -> u64 {
                 };
                 5 * prev + modifier
             })
-    }).sorted().collect::<Vec<_>>();
+        })
+        .sorted()
+        .collect::<Vec<_>>();
 
     sorted_result[sorted_result.len() / 2]
 }
 
-
-
-
-
 pub fn answer() {
     println!("Answer to problem 10: {} {}", a(), b());
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -29,28 +29,23 @@ fn perform_folds(arr: &mut Vec<Vec<bool>>, instructions: &[(String, usize)]) {
 fn get_data() -> (Vec<Vec<bool>>, Vec<(String, usize)>) {
     let data = read_lines("src/a13/input").collect::<Vec<_>>();
 
-    let separator_position = data.iter().position(|line| line == "").unwrap();
+    let separator_position = data.iter().position(|line| line.is_empty()).unwrap();
 
-    let points = &data[0..separator_position].iter().map(|line| {
-        let coordinates = line
-            .split(",")
-            .map(|raw| raw.parse::<usize>().unwrap())
-            .collect::<Vec<_>>();
-
-        (coordinates[0], coordinates[1])
-    }).collect::<Vec<_>>();
-
-    let max_x = *points
+    let points = &data[0..separator_position]
         .iter()
-        .map(|(x, _y)| x)
-        .max()
-        .unwrap();
+        .map(|line| {
+            let coordinates = line
+                .split(',')
+                .map(|raw| raw.parse::<usize>().unwrap())
+                .collect::<Vec<_>>();
 
-    let max_y = *points
-        .iter()
-        .map(|(_x, y)| y)
-        .max()
-        .unwrap();
+            (coordinates[0], coordinates[1])
+        })
+        .collect::<Vec<_>>();
+
+    let max_x = *points.iter().map(|(x, _y)| x).max().unwrap();
+
+    let max_y = *points.iter().map(|(_x, y)| y).max().unwrap();
 
     let instructions = data[separator_position + 1..data.len()]
         .iter()
@@ -59,11 +54,14 @@ fn get_data() -> (Vec<Vec<bool>>, Vec<(String, usize)>) {
                 .split("fold along ")
                 .nth(1)
                 .unwrap()
-                .split("=")
+                .split('=')
                 .collect::<Vec<_>>();
-            (String::from(fold_instruction[0]), fold_instruction[1].parse::<usize>().unwrap())
-        }).collect::<Vec<_>>();
-
+            (
+                String::from(fold_instruction[0]),
+                fold_instruction[1].parse::<usize>().unwrap(),
+            )
+        })
+        .collect::<Vec<_>>();
 
     let mut arr = vec![vec![false; max_x + 1 + 3]; max_y + 1 + 3];
 
@@ -79,7 +77,9 @@ fn a() -> u32 {
 
     perform_folds(&mut arr, &instructions[0..1]);
 
-    arr.iter().map(|row| row.iter().map(|x| *x as u32).sum::<u32>()).sum()
+    arr.iter()
+        .map(|row| row.iter().map(|x| *x as u32).sum::<u32>())
+        .sum()
 }
 
 fn b() -> String {
@@ -93,7 +93,7 @@ fn b() -> String {
         for cell in row {
             code.push_str(if *cell { "*" } else { " " });
         }
-        code.push_str("\n");
+        code.push('\n');
     }
 
     code
@@ -102,7 +102,6 @@ fn b() -> String {
 pub fn answer() {
     println!("Answer to problem 13: {} \n{}", a(), b());
 }
-
 
 #[cfg(test)]
 mod tests {

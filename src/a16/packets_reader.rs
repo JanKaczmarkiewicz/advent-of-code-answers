@@ -29,7 +29,7 @@ impl PacketsReader {
         let offset_next_value = offset_value + amount;
         let fragment = &self.bytes[offset_value..offset_next_value];
         self.offset.set(offset_next_value);
-        return fragment;
+        fragment
     }
 
     fn read_header(&self) -> (u64, u64) {
@@ -39,7 +39,7 @@ impl PacketsReader {
         let type_id_raw = self.read_next_bytes(TYPE_ID_SIZE);
         let type_id = str_binary_to_number(type_id_raw);
 
-        return (version_id, type_id);
+        (version_id, type_id)
     }
 
     fn read_zeros(&self) {
@@ -61,7 +61,7 @@ impl PacketsReader {
         loop {
             let frame = self.read_next_bytes(LITERAL_FRAME_SIZE);
             values.push(&frame[1..]);
-            if frame.starts_with("0") {
+            if frame.starts_with('0') {
                 break;
             }
         }
@@ -109,7 +109,7 @@ impl PacketsReader {
 
         let value = match type_id {
             0 => sub_packages_values.iter().sum(),
-            1 => sub_packages_values.iter().fold(1, |acc, curr| acc * curr),
+            1 => sub_packages_values.iter().product(),
             2 => sub_packages_values.iter().min().unwrap().to_owned(),
             3 => sub_packages_values.iter().max().unwrap().to_owned(),
             5 => {
@@ -148,6 +148,6 @@ impl PacketsReader {
             sum += value;
             self.read_zeros();
         }
-        return (version_sum, sum);
+        (version_sum, sum)
     }
 }

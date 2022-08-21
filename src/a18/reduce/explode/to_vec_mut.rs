@@ -5,7 +5,7 @@ pub fn to_vec_mut(d: &mut Data) -> Vec<&mut u8> {
 
     to_vec_mut_inner(d, &mut res);
 
-    return res;
+    res
 }
 
 fn to_vec_mut_inner<'a>(d: &'a mut Data, res: &mut Vec<&'a mut u8>) {

@@ -1,23 +1,23 @@
-use std::collections::HashMap;
-use itertools::Itertools;
 use crate::utils::read_lines;
+use itertools::Itertools;
+use std::collections::HashMap;
 
 fn perform_instructions(times: usize) -> u64 {
     let lines = read_lines("src/a14/input").collect::<Vec<_>>();
 
     let mut instructions = HashMap::new();
 
-    for line in  &lines[2..lines.len()] {
+    for line in &lines[2..lines.len()] {
         let instruction_parts = line.split(" -> ").collect::<Vec<_>>();
         instructions.insert(instruction_parts[0], instruction_parts[1]);
     }
 
-    let mut template:HashMap<String, u64> = HashMap::new();
+    let mut template: HashMap<String, u64> = HashMap::new();
 
     let initial_template = lines[0].to_owned();
 
-    (0..initial_template.len()-1)
-        .map(|i| &initial_template[i..i+2])
+    (0..initial_template.len() - 1)
+        .map(|i| &initial_template[i..i + 2])
         .for_each(|part| {
             *template.entry(String::from(part)).or_insert(0) += 1;
         });
@@ -26,7 +26,6 @@ fn perform_instructions(times: usize) -> u64 {
         let mut result_template = HashMap::new();
 
         for (key, value) in &template {
-
             let value = *value;
 
             let template_part = *instructions.get(key.as_str()).unwrap();
@@ -55,22 +54,25 @@ fn perform_instructions(times: usize) -> u64 {
 
     let (min, max) = chars
         .iter()
-        .map(|(_key, value)| ((*value as f64) / 2 as f64).ceil() as u64)
+        .map(|(_key, value)| ((*value as f64) / 2_f64).ceil() as u64)
         .minmax()
         .into_option()
         .unwrap();
 
-     max - min
+    max - min
 }
 
 pub fn answer() {
-    println!("Answer to problem 14: {} {}", perform_instructions(10), perform_instructions(40));
+    println!(
+        "Answer to problem 14: {} {}",
+        perform_instructions(10),
+        perform_instructions(40)
+    );
 }
-
 
 #[cfg(test)]
 mod tests {
-    use super::{perform_instructions};
+    use super::perform_instructions;
 
     #[test]
     fn should_solve_first_problem() {
@@ -81,5 +83,4 @@ mod tests {
     fn should_solve_second_problem() {
         assert_eq!(perform_instructions(40), 3459822539451);
     }
-
 }

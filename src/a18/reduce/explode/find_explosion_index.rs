@@ -30,7 +30,7 @@ fn find_explosion_index_inner(d: &Data, depth: usize, index: &mut i32) -> bool {
 pub fn find_explosion_index(d: &Data) -> Option<usize> {
     let mut index = -1;
 
-    if find_explosion_index_inner(&d, 0, &mut index) {
+    if find_explosion_index_inner(d, 0, &mut index) {
         Some((index + 1) as usize)
     } else {
         None

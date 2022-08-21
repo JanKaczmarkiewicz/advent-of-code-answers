@@ -1,19 +1,16 @@
 use crate::utils::read_lines;
 
 fn read_octopuses() -> Vec<Vec<u32>> {
-     read_lines("src/a11/input")
-        .map(|line|
-            line
-                .chars()
-                .map(|char| {
-                    char.to_digit(10).unwrap()
-                })
-                .collect::<Vec<_>>())
+    read_lines("src/a11/input")
+        .map(|line| {
+            line.chars()
+                .map(|char| char.to_digit(10).unwrap())
+                .collect::<Vec<_>>()
+        })
         .collect::<Vec<_>>()
 }
 
 fn flash_rec(x: usize, y: usize, octopuses: &mut Vec<Vec<u32>>) {
-
     if octopuses[y][x] > 9 {
         octopuses[y][x] = 0;
 
@@ -32,8 +29,13 @@ fn flash_rec(x: usize, y: usize, octopuses: &mut Vec<Vec<u32>>) {
         ];
 
         for (x, y) in directions {
-            if x >= 0 && y >= 0 && x < octopuses[0].len() as i32  && y < octopuses.len() as i32 && octopuses[y as usize][x as usize] != 0 {
-                octopuses[y as usize ][x as usize] += 1;
+            if x >= 0
+                && y >= 0
+                && x < octopuses[0].len() as i32
+                && y < octopuses.len() as i32
+                && octopuses[y as usize][x as usize] != 0
+            {
+                octopuses[y as usize][x as usize] += 1;
                 flash_rec(x as usize, y as usize, octopuses);
             }
         }
@@ -58,7 +60,10 @@ fn a() -> u32 {
             }
         }
 
-        sum += octopuses.iter().flatten().fold(0, |prev, curr| if *curr == 0 {1} else {0} + prev )
+        sum += octopuses
+            .iter()
+            .flatten()
+            .fold(0, |prev, curr| if *curr == 0 { 1 } else { 0 } + prev)
     }
 
     sum
@@ -88,12 +93,9 @@ fn b() -> u32 {
     0
 }
 
-
-
 pub fn answer() {
     println!("Answer to problem 11: {}, {}", a(), b());
 }
-
 
 #[cfg(test)]
 mod tests {
