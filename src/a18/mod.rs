@@ -31,8 +31,26 @@ fn a() -> u32 {
     magnitude(result)
 }
 
-fn b() -> usize {
-    0
+fn b() -> u32 {
+    let result = read("src/a18/input")
+        .lines()
+        .flat_map(serde_json::from_str::<Data>)
+        .map(reduce)
+        .collect::<Vec<_>>();
+
+    let cases = (0..result.len())
+        .flat_map(|i| (0..result.len()).map(move |j| (i, j)))
+        .filter(|(i, j)| i != j);
+
+    cases
+        .map(|(i, j)| {
+            magnitude(reduce(Data::Pair(Box::new((
+                result[i].clone(),
+                result[j].clone(),
+            )))))
+        })
+        .max()
+        .unwrap()
 }
 
 pub fn answer() {
@@ -41,11 +59,16 @@ pub fn answer() {
 
 #[cfg(test)]
 mod tests {
-    use super::a;
+    use super::{a, b};
 
     #[test]
-    fn should_solve_first_problem() {
+    fn first() {
         assert_eq!(a(), 4140);
+    }
+
+    #[test]
+    fn second() {
+        assert_eq!(b(), 4669);
     }
 
     #[test]
