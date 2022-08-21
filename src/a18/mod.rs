@@ -1,5 +1,6 @@
 mod data;
 mod explode;
+mod split;
 use crate::{a18::data::Data, utils::read};
 
 fn a() -> i32 {
