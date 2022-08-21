@@ -53,7 +53,7 @@ mod tests {
 
     #[test]
     fn two() {
-        let mut input = parse("[[[[0,9],2],3],4]");
+        let mut input = parse("[7,[6,[5,[4,[3,2]]]]]");
 
         let result = explode(&mut input);
 

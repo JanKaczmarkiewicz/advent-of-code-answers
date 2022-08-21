@@ -63,7 +63,7 @@ mod tests {
 
     #[test]
     fn first() {
-        assert_eq!(a(), 4140);
+        assert_eq!(a(), 3935);
     }
 
     #[test]
