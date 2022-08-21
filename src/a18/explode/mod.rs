@@ -1,24 +1,32 @@
 mod find_explosion_index;
+mod reset_at;
 mod to_vec_mut;
 use super::data::Data;
 use find_explosion_index::find_explosion_index;
+use reset_at::reset_at;
 use to_vec_mut::to_vec_mut;
 
-fn explode(mut data: Data) -> (Data, bool) {
-    // TODO: we need to change [x,y] -> 0
-    if let Some(index_to_explode) = find_explosion_index(&data) {
-        let mut numbers_left_to_right = to_vec_mut(&mut data);
+fn explode(data: &mut Data) -> bool {
+    if let Some(index_to_explode) = find_explosion_index(data) {
+        let index_to_explode = index_to_explode;
 
-        let right = *numbers_left_to_right.remove(index_to_explode + 1); // remove pairs right element
+        let mut numbers_left_to_right = to_vec_mut(data);
+
+        let right = *numbers_left_to_right.remove(index_to_explode + 1); // remove pair right element
         let left = *numbers_left_to_right[index_to_explode];
 
-        *numbers_left_to_right[index_to_explode - 1] += left;
-        *numbers_left_to_right[index_to_explode] = 0;
-        *numbers_left_to_right[index_to_explode + 1] += right;
+        if index_to_explode != 0 {
+            *numbers_left_to_right[index_to_explode - 1] += left;
+        }
 
-        (data, true)
+        if index_to_explode + 1 != numbers_left_to_right.len() {
+            *numbers_left_to_right[index_to_explode + 1] += right;
+        }
+
+        reset_at(data, index_to_explode);
+        true
     } else {
-        (data, false)
+        false
     }
 }
 
@@ -35,36 +43,51 @@ mod tests {
 
     #[test]
     fn one() {
-        let res = explode(parse("[[[[[9,8],1],2],3],4]"));
+        let mut input = parse("[[[[[9,8],1],2],3],4]");
 
-        assert_eq!(res, (parse("[[[[0,9],2],3],4]"), true));
+        let result = explode(&mut input);
+
+        assert!(result);
+        assert_eq!(input, parse("[[[[0,9],2],3],4]"));
     }
 
     #[test]
     fn two() {
-        let res = explode(parse("[7,[6,[5,[4,[3,2]]]]]"));
+        let mut input = parse("[[[[0,9],2],3],4]");
 
-        assert_eq!(res, (parse("[7,[6,[5,[7,0]]]]"), true));
+        let result = explode(&mut input);
+
+        assert!(result);
+        assert_eq!(input, parse("[7,[6,[5,[7,0]]]]"));
     }
 
     #[test]
     fn three() {
-        let res = explode(parse("[[6,[5,[4,[3,2]]]],1]"));
+        let mut input = parse("[[6,[5,[4,[3,2]]]],1]");
 
-        assert_eq!(res, (parse("[[6,[5,[7,0]]],3]"), true));
+        let result = explode(&mut input);
+
+        assert!(result);
+        assert_eq!(input, parse("[[6,[5,[7,0]]],3]"));
     }
 
     #[test]
     fn four() {
-        let res = explode(parse("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"));
+        let mut input = parse("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]");
 
-        assert_eq!(res, (parse("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"), true));
+        let result = explode(&mut input);
+
+        assert!(result);
+        assert_eq!(input, parse("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"));
     }
 
     #[test]
     fn five() {
-        let res = explode(parse("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"));
+        let mut input = parse("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]");
 
-        assert_eq!(res, (parse("[[3,[2,[8,0]]],[9,[5,[7,0]]]]"), true));
+        let result = explode(&mut input);
+
+        assert!(result);
+        assert_eq!(input, parse("[[3,[2,[8,0]]],[9,[5,[7,0]]]]"));
     }
 }
