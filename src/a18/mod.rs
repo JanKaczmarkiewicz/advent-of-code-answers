@@ -70,7 +70,4 @@ mod tests {
     fn second() {
         assert_eq!(b(), 4669);
     }
-
-    #[test]
-    fn should_solve_second_problem() {}
 }
