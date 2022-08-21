@@ -3,15 +3,32 @@ mod reduce;
 use crate::{a18::data::Data, utils::read};
 use reduce::reduce;
 
-fn a() -> i32 {
+fn magnitude(data: Data) -> u32 {
+    match data {
+        Data::Pair(pair) => {
+            let pair = *pair;
+            let (left, right) = pair;
+
+            magnitude(left) * 3 + magnitude(right) * 2
+        }
+        Data::Integer(n) => n as u32,
+    }
+}
+
+fn a() -> u32 {
     let result = read("src/a18/input")
         .lines()
         .flat_map(serde_json::from_str::<Data>)
         .map(reduce)
-        .collect::<Vec<_>>();
+        .fold(Data::Integer(0), |acc, element| {
+            if let Data::Pair(_) = acc {
+                reduce(Data::Pair(Box::new((acc, element))))
+            } else {
+                element
+            }
+        });
 
-    println!("{:?}", result);
-    0
+    magnitude(result)
 }
 
 fn b() -> usize {
@@ -28,7 +45,7 @@ mod tests {
 
     #[test]
     fn should_solve_first_problem() {
-        a();
+        assert_eq!(a(), 4140);
     }
 
     #[test]
