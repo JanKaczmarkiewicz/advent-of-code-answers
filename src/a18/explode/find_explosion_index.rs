@@ -7,7 +7,7 @@ fn find_explosion_index_inner(d: &mut Data, depth: usize, index: &mut i32) -> bo
             let right = &mut pair.1;
 
             if let (Data::Integer(_), Data::Integer(_)) = (&left, &right) {
-                if depth >= 3 {
+                if depth >= 4 {
                     return true;
                 }
             }
@@ -54,16 +54,16 @@ mod tests {
 
     #[test]
     fn find_explosion_index_two() {
-        assert_eq!(setup("[7,[6,[5,[4,[3,2]]]]]"), Some(0));
+        assert_eq!(setup("[7,[6,[5,[4,[3,2]]]]]"), Some(4));
     }
 
     #[test]
     fn find_explosion_index_three() {
-        assert_eq!(setup("[[6,[5,[4,[3,2]]]],1]"), Some(0));
+        assert_eq!(setup("[[6,[5,[4,[3,2]]]],1]"), Some(3));
     }
 
     #[test]
     fn find_explosion_index_four() {
-        assert_eq!(setup("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"), Some(0));
+        assert_eq!(setup("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"), Some(7));
     }
 }
