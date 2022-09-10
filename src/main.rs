@@ -11,6 +11,7 @@ mod a16;
 mod a17;
 mod a18;
 mod a2;
+mod a20;
 mod a3;
 mod a4;
 mod a5;
@@ -38,4 +39,5 @@ fn main() {
     a16::answer();
     a17::answer();
     a18::answer();
+    a20::answer();
 }
