@@ -27,10 +27,7 @@ fn a() -> usize {
             players_score[index] += player_position;
 
             if players_score.into_iter().max().unwrap() >= 1000 {
-                let result = players_score.into_iter().min().unwrap() * times_roled;
-
-                println!("Result: {times_roled}, {:?}", players_score);
-                return result;
+                return players_score.into_iter().min().unwrap() * times_roled;
             }
         }
     }
