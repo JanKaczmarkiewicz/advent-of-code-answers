@@ -18,6 +18,7 @@ mod a6;
 mod a7;
 mod a8;
 mod a9;
+mod y2022;
 
 fn main() {
     a1::answer();
@@ -38,4 +39,6 @@ fn main() {
     a16::answer();
     a17::answer();
     a18::answer();
+
+    y2022::d1::answer();
 }
