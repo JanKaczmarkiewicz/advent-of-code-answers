@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use itertools::Itertools;
+
 use crate::utils::read_lines;
 
 pub fn answer() {
@@ -29,5 +31,19 @@ pub fn a1() {
 }
 
 pub fn a2() {
-    println!("a2: {}", 0);
+    let res = read_lines("src/y2022/d3/input")
+        .chunks(3)
+        .into_iter()
+        .map(|group| {
+            group
+                .map(|gnome| HashSet::<_>::from_iter(gnome.chars()))
+                .reduce(|accum, item| accum.intersection(&item).copied().collect::<HashSet<_>>())
+                .unwrap()
+                .iter()
+                .map(|c| (*c as u8 - if c.is_lowercase() { 96 } else { 65 - 27 }) as u32)
+                .sum::<u32>()
+        })
+        .sum::<u32>();
+
+    println!("a2: {}", res);
 }
