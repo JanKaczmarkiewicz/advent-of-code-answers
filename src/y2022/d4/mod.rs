@@ -47,6 +47,6 @@ mod tests {
 
     #[test]
     fn should_solve_second_problem() {
-        // assert_eq!(b(), 118242);
+        assert_eq!(a2(), 804);
     }
 }
