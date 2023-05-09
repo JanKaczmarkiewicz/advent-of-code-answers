@@ -37,6 +37,13 @@ fn parse_columns(raw: &str) -> Vec<Vec<char>> {
         .collect::<Vec<_>>()
 }
 
+fn get_result(columns: Vec<Vec<char>>) -> String {
+    columns
+        .iter()
+        .map(|column| column.last().unwrap())
+        .collect::<String>()
+}
+
 pub fn a1() -> String {
     let binding = read("src/y2022/d5/input");
 
@@ -49,19 +56,37 @@ pub fn a1() -> String {
     let instructions = iter.next().unwrap().lines().map(parse_instriction);
 
     instructions.for_each(|Instriction { from, to, number }| {
-        let col_len = columns[from].len();       
-        let items_to_move = columns[from].drain(col_len-number..col_len).rev().collect::<Vec<_>>();
+        let col_len = columns[from].len();
+        let items_to_move = columns[from]
+            .drain(col_len - number..col_len)
+            .rev()
+            .collect::<Vec<_>>();
         columns[to].extend(items_to_move);
     });
 
-    columns
-        .iter()
-        .map(|column| column.last().unwrap())
-        .collect::<String>()
+    get_result(columns)
 }
 
-pub fn a2() -> usize {
-    0
+pub fn a2() -> String {
+    let binding = read("src/y2022/d5/input");
+
+    let mut iter = binding.split("\n\n");
+
+    let state_raw = iter.next().unwrap();
+
+    let mut columns = parse_columns(state_raw);
+
+    let instructions = iter.next().unwrap().lines().map(parse_instriction);
+
+    instructions.for_each(|Instriction { from, to, number }| {
+        let col_len = columns[from].len();
+        let items_to_move = columns[from]
+            .drain(col_len - number..col_len)
+            .collect::<Vec<_>>();
+        columns[to].extend(items_to_move);
+    });
+
+    get_result(columns)
 }
 
 #[cfg(test)]
@@ -74,5 +99,7 @@ mod tests {
     }
 
     #[test]
-    fn should_solve_second_problem() {}
+    fn should_solve_second_problem() {
+        assert_eq!(a2(), "ZRLJGSCTR");
+    }
 }
