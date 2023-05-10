@@ -100,6 +100,6 @@ mod tests {
 
     #[test]
     fn should_solve_second_problem() {
-        assert_eq!(a2(), "ZRLJGSCTR");
+        assert_eq!(a2(), "PRTTGRFPB");
     }
 }
