@@ -30,10 +30,13 @@ pub fn a1() -> usize {
 
 pub fn a2() -> usize {
     read_pairs()
-    .filter(|(left, right)| {
-        (left.0..=left.1).contains(&right.0) || (left.0..=left.1).contains(&right.1) || (right.0..=right.1).contains(&left.0) || (right.0..=right.1).contains(&left.1)
-    })
-    .count()
+        .filter(|(left, right)| {
+            (left.0..=left.1).contains(&right.0)
+                || (left.0..=left.1).contains(&right.1)
+                || (right.0..=right.1).contains(&left.0)
+                || (right.0..=right.1).contains(&left.1)
+        })
+        .count()
 }
 
 #[cfg(test)]
@@ -47,6 +50,6 @@ mod tests {
 
     #[test]
     fn should_solve_second_problem() {
-        // assert_eq!(b(), 118242);
+        assert_eq!(a2(), 804);
     }
 }
