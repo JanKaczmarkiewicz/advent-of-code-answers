@@ -9,30 +9,38 @@ pub fn a1() -> usize {
     let communication: Vec<_> = read("src/y2022/d6/input").chars().collect();
 
     for i in 0..communication.len() {
+        const NUMBER_OF_UNIQUE_CHARS: usize = 4;
 
-        const NUMBER_OF_UNIQUE_CHARS: usize = 4; 
-
-        if communication[i..i+NUMBER_OF_UNIQUE_CHARS].iter().unique().count() == NUMBER_OF_UNIQUE_CHARS {
+        if communication[i..i + NUMBER_OF_UNIQUE_CHARS]
+            .iter()
+            .unique()
+            .count()
+            == NUMBER_OF_UNIQUE_CHARS
+        {
             return i + NUMBER_OF_UNIQUE_CHARS;
         }
     }
-    
-    return 0
+
+    return 0;
 }
 
 pub fn a2() -> usize {
     let communication: Vec<_> = read("src/y2022/d6/input").chars().collect();
 
     for i in 0..communication.len() {
+        const NUMBER_OF_UNIQUE_CHARS: usize = 14;
 
-        const NUMBER_OF_UNIQUE_CHARS: usize = 14; 
-
-        if communication[i..i+NUMBER_OF_UNIQUE_CHARS].iter().unique().count() == NUMBER_OF_UNIQUE_CHARS {
+        if communication[i..i + NUMBER_OF_UNIQUE_CHARS]
+            .iter()
+            .unique()
+            .count()
+            == NUMBER_OF_UNIQUE_CHARS
+        {
             return i + NUMBER_OF_UNIQUE_CHARS;
         }
     }
-    
-    return 0
+
+    return 0;
 }
 
 #[cfg(test)]
