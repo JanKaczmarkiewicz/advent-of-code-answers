@@ -44,5 +44,6 @@ fn main() {
     y2022::d2::answer();
     y2022::d3::answer();
     y2022::d4::answer();
+    y2022::d5::answer();
     y2022::d6::answer();
 }
