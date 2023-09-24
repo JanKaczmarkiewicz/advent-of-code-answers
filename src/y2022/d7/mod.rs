@@ -103,7 +103,24 @@ pub fn a1() -> usize {
 }
 
 pub fn a2() -> usize {
-    return 0;
+    let raw_commands = read("src/y2022/d7/input");
+
+    let dirs = parse_file_structure(&raw_commands);
+
+    let free_space = 70000000 - calculate_dir_size(&dirs, "/");
+    let free_space_needed = 30000000;
+
+    dirs.keys()
+        .filter_map(|key| {
+            let size = calculate_dir_size(&dirs, key);
+            if size + free_space >= free_space_needed {
+                Some(size)
+            } else {
+                None
+            }
+        })
+        .min()
+        .unwrap()
 }
 
 #[cfg(test)]
