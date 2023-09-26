@@ -49,31 +49,57 @@ pub fn a1() -> usize {
     count
 }
 
-// pub fn a2() -> usize {
-//     let map_of_trees = read_lines("src/y2022/d8/input")
-//         .map(|row| {
-//             row.chars()
-//                 .map(|c| c.to_digit(10).unwrap())
-//                 .collect::<Vec<_>>()
-//         })
-//         .collect::<Vec<_>>();
+pub fn a2() -> usize {
+    let map_of_trees = read_lines("src/y2022/d8/input")
+        .map(|row| {
+            row.chars()
+                .map(|c| c.to_digit(10).unwrap())
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
 
+    let mut max_score = 0;
 
-//     let is_visible = |i: usize, j: usize| {
-        
-//     };
+    for i in 0..map_of_trees.len() {
+        for j in 0..map_of_trees[i].len() {
+            let mut top_count = 0;
+            for k in (0..i).rev() {
+                top_count += 1;
+                if map_of_trees[i][j] <= map_of_trees[k][j] {
+                    break;
+                }
+            }
 
-//     for i in 0..map_of_trees.len() {
-//         for j in 0..map_of_trees[i].len() {
-//         }
-//     }
+            let mut bottom_count = 0;
+            for k in i + 1..map_of_trees.len() {
+                bottom_count += 1;
+                if map_of_trees[i][j] <= map_of_trees[k][j] {
+                    break;
+                }
+            }
 
-//     0
-// }
+            let mut left_count = 0;
+            for k in (0..j).rev() {
+                left_count += 1;
+                if map_of_trees[i][j] <= map_of_trees[i][k] {
+                    break;
+                }
+            }
 
-// pub fn a2() -> usize {
-//     0
-// }
+            let mut right_count = 0;
+            for k in j + 1..map_of_trees[0].len() {
+                right_count += 1;
+                if map_of_trees[i][j] <= map_of_trees[i][k] {
+                    break;
+                }
+            }
+
+            max_score = max_score.max(top_count * bottom_count * left_count * right_count);
+        }
+    }
+
+    max_score
+}
 
 #[cfg(test)]
 mod tests {
@@ -86,6 +112,6 @@ mod tests {
 
     #[test]
     fn should_solve_second_problem() {
-        // assert_eq!(a2(), 0);
+        assert_eq!(a2(), 368368);
     }
 }
