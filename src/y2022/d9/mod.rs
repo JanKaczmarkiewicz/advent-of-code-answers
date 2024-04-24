@@ -1,8 +1,4 @@
-use std::{
-    collections::HashSet,
-    io::{stdin, stdout, Read, Write},
-    process::Command,
-};
+use std::{collections::HashSet, process::Command};
 
 use crate::utils::read_lines;
 
@@ -10,33 +6,27 @@ pub fn answer() {
     println!("Answer to day9: {} {}", a1(), a2());
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 enum Direction {
     Up,
     Down,
     Left,
     Right,
 }
-fn pause() {
-    let mut stdout = stdout();
-    stdout.write(b"Press Enter to continue...").unwrap();
-    stdout.flush().unwrap();
-    stdin().read(&mut [0]).unwrap();
-}
 
 fn parse_instruction(instruction: String) -> impl Iterator<Item = Direction> {
-    let mut chars = instruction.chars();
-    let direction = match chars.next().unwrap() {
-        'U' => Direction::Up,
-        'D' => Direction::Down,
-        'L' => Direction::Left,
-        'R' => Direction::Right,
+    let mut chars = instruction.split(" ");
+
+    let dir = chars.next().unwrap();
+    let count = chars.next().unwrap().parse().unwrap();
+
+    let direction = match dir {
+        "U" => Direction::Up,
+        "D" => Direction::Down,
+        "L" => Direction::Left,
+        "R" => Direction::Right,
         _ => panic!("Unknown direction"),
     };
-
-    chars.next().unwrap();
-
-    let count = chars.next().unwrap().to_digit(10).unwrap();
 
     (0..count).map(move |_| direction)
 }
@@ -75,8 +65,6 @@ fn render(tail_visited: &HashSet<(i32, i32)>, head_point: (i32, i32), tail_point
         println!();
     }
     println!("Head: {:?}, Tail: {:?}", head_point, tail_point);
-
-    pause();
 }
 
 pub fn a1() -> usize {
@@ -131,7 +119,7 @@ pub fn a1() -> usize {
                 };
                 tail_visited.insert(tail_position);
 
-                render(&tail_visited, head_position, tail_position);
+                // render(&tail_visited, head_position, tail_position);
 
                 (head_position, tail_position)
             },
@@ -150,7 +138,15 @@ mod tests {
 
     #[test]
     fn should_solve_first_problem() {
-        assert_eq!(a1(), 1818);
+        assert_eq!(a1(), 3301);
+    }
+
+    #[test]
+    fn parse_instruction_test() {
+        assert_eq!(
+            parse_instruction("R 12".to_string()).collect::<Vec<_>>(),
+            (0..12).map(|_| Direction::Right).collect::<Vec<_>>()
+        );
     }
 
     #[test]
