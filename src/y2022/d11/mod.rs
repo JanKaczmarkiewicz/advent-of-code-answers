@@ -6,7 +6,7 @@ pub fn answer() {
 
 #[derive(Debug, PartialEq)]
 enum OperationValue {
-    Number(usize),
+    Number(i128),
     State,
 }
 
@@ -18,9 +18,9 @@ enum Operation {
 
 #[derive(Debug, PartialEq)]
 struct Monkey {
-    items: Vec<usize>,
-    decision: (usize, usize, usize),
-    operation_performed: usize,
+    items: Vec<i128>,
+    decision: (i128, usize, usize),
+    operation_performed: i128,
     operation: Operation,
 }
 
@@ -36,7 +36,7 @@ fn parse_monkeys(text: &str) -> Vec<Monkey> {
                 .map(|s| {
                     String::from_utf8_lossy(&s.as_bytes()[18..])
                         .split(", ")
-                        .map(|num| num.parse::<usize>().unwrap())
+                        .map(|num| num.parse::<i128>().unwrap())
                         .collect::<Vec<_>>()
                 })
                 .unwrap();
@@ -80,7 +80,7 @@ fn parse_monkeys(text: &str) -> Vec<Monkey> {
                 .next()
                 .map(|s| {
                     String::from_utf8_lossy(&s.as_bytes()[21..])
-                        .parse::<usize>()
+                        .parse::<i128>()
                         .unwrap()
                 })
                 .unwrap();
@@ -113,7 +113,7 @@ fn parse_monkeys(text: &str) -> Vec<Monkey> {
         .collect()
 }
 
-pub fn a1() -> usize {
+pub fn a1() -> i128 {
     let text = read("src/y2022/d11/input");
 
     let mut monkeys = parse_monkeys(&text);
@@ -193,8 +193,92 @@ pub fn a1() -> usize {
     return max1 * max2;
 }
 
-pub fn a2() -> usize {
-    0
+pub fn a2() -> i128 {
+    let text = read("src/y2022/d11/input");
+
+    let mut monkeys = parse_monkeys(&text);
+
+    let common_divider = monkeys
+        .iter()
+        .map(|m| m.decision.0)
+        .reduce(|acc, curr| acc * curr)
+        .unwrap();
+
+    for _ in 0..10000 {
+        for i in 0..monkeys.len() {
+            for item_i in (0..monkeys[i].items.len()).rev() {
+                monkeys[i].operation_performed += 1;
+
+                let item_value = monkeys[i].items[item_i];
+
+                monkeys[i].items[item_i] = match &monkeys[i].operation {
+                    Operation::Addition(l, r) => {
+                        let l = match l {
+                            OperationValue::Number(n) => *n,
+                            OperationValue::State => item_value,
+                        };
+
+                        let r = match r {
+                            OperationValue::Number(n) => *n,
+                            OperationValue::State => item_value,
+                        };
+
+                        (l + r) % common_divider
+                    }
+                    Operation::Multiplication(l, r) => {
+                        let l = match l {
+                            OperationValue::Number(n) => *n,
+                            OperationValue::State => item_value,
+                        };
+
+                        let r = match r {
+                            OperationValue::Number(n) => *n,
+                            OperationValue::State => item_value,
+                        };
+
+                        (l * r) % common_divider
+                    }
+                };
+
+                let new_item = monkeys[i].items[item_i];
+
+                let target_monkey = if new_item % monkeys[i].decision.0 == 0 {
+                    monkeys[i].decision.1
+                } else {
+                    monkeys[i].decision.2
+                };
+
+                monkeys[i].items.pop();
+                monkeys[target_monkey].items.insert(0, new_item);
+            }
+        }
+    }
+
+    let mut max1 = 0;
+
+    for Monkey {
+        operation_performed,
+        ..
+    } in &monkeys
+    {
+        if *operation_performed > max1 {
+            max1 = *operation_performed;
+        }
+    }
+
+    let mut max2 = 0;
+
+    for Monkey {
+        operation_performed,
+        ..
+    } in monkeys
+    {
+        if operation_performed > max2 && operation_performed != max1 {
+            max2 = operation_performed;
+        }
+    }
+
+    return max1 * max2;
 }
 
 #[cfg(test)]
