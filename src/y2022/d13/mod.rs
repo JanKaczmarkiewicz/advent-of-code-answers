@@ -1,10 +1,14 @@
+use std::cmp::Ordering;
+
+use itertools::Itertools;
+
 use crate::utils::read_lines;
 
 pub fn answer() {
     println!("Answer to day13: {}", a1());
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 enum Value {
     List(Vec<Value>),
     Number(i32),
@@ -53,7 +57,7 @@ fn parse_value(str: &str) -> Value {
     }
 }
 
-fn compare_values(left: Value, right: Value) -> Option<bool> {
+fn compare_values(left: &Value, right: &Value) -> Option<bool> {
     match (left, right) {
         (Value::Number(l), Value::Number(r)) => (l != r).then_some(l < r),
         (Value::List(l), Value::List(r)) => {
@@ -66,11 +70,11 @@ fn compare_values(left: Value, right: Value) -> Option<bool> {
                 (l_len != r_len).then_some(l_len < r_len)
             }
         }
-        (Value::Number(l), Value::List(r)) => {
-            compare_values(Value::List(vec![Value::Number(l)]), Value::List(r))
+        (Value::Number(l), Value::List(_)) => {
+            compare_values(&Value::List(vec![Value::Number(*l)]), &right.clone())
         }
-        (Value::List(r), Value::Number(l)) => {
-            compare_values(Value::List(r), Value::List(vec![Value::Number(l)]))
+        (Value::List(_), Value::Number(l)) => {
+            compare_values(&left.clone(), &Value::List(vec![Value::Number(*l)]))
         }
     }
 }
@@ -87,7 +91,7 @@ fn a1() -> usize {
         .zip(rights)
         .enumerate()
         .filter_map(|(index, ((_, left), (_, right)))| {
-            if let Some(result) = compare_values(left, right) {
+            if let Some(result) = compare_values(&left, &right) {
                 if result {
                     Some(index + 1)
                 } else {
@@ -98,6 +102,42 @@ fn a1() -> usize {
             }
         })
         .sum()
+}
+
+fn a2() -> usize {
+    let dividers = [
+        Value::List(vec![Value::List(vec![Value::Number(2)])]),
+        Value::List(vec![Value::List(vec![Value::Number(6)])]),
+    ];
+
+    let sorted: Vec<_> = read_lines("src/y2022/d13/input")
+        .filter(|line| line != "")
+        .map(|line| parse_value(&line))
+        .chain(dividers.clone())
+        .sorted_by(|left, right| {
+            if let Some(result) = compare_values(left, right) {
+                if result {
+                    return Ordering::Less;
+                } else {
+                    return Ordering::Greater;
+                }
+            } else {
+                return Ordering::Equal;
+            }
+        })
+        .collect();
+
+    let div_pos_1 = sorted
+        .iter()
+        .position(|value| value == &dividers[0])
+        .unwrap();
+
+    let div_pos_2 = sorted
+        .iter()
+        .position(|value| value == &dividers[1])
+        .unwrap();
+
+    (div_pos_1 + 1) * (div_pos_2 + 1)
 }
 
 #[cfg(test)]
@@ -132,6 +172,6 @@ mod tests {
 
     #[test]
     fn should_solve_second_problem() {
-        // assert_eq!(a2(), 0);
+        assert_eq!(a2(), 21582);
     }
 }
