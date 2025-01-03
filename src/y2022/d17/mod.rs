@@ -68,10 +68,11 @@ fn a1() -> usize {
     let mut operators = o.chars().cycle();
 
     let mut stable_shapes: Vec<(i32, i32)> = vec![];
+    let mut highest_y_tile = 0;
 
     for i in 0..2022 {
         let mut x_pos = X_SPAWN_OFFSET;
-        let mut y_pos = compute_highest_occupied_tile(&stable_shapes) + Y_SPAWN_OFFSET;
+        let mut y_pos = highest_y_tile + Y_SPAWN_OFFSET;
 
         // positions start from the top
         let shape_blocks: &[(i32, i32)] = match i % 5 {
@@ -121,6 +122,15 @@ fn a1() -> usize {
 
             if is_collision_after_move {
                 stable_shapes.extend(shape_blocks.iter().map(|(x, y)| (x + x_pos, y + y_pos))); // OPTIMALIZTION: filter all tiles that are not as a outside shape
+                highest_y_tile = highest_y_tile.max(
+                    shape_blocks
+                        .iter()
+                        .map(|(x, y)| (x + x_pos, y + y_pos))
+                        .map(|(_, y)| y)
+                        .max()
+                        .map_or(0, |x| x + 1),
+                );
+
                 break;
             } else {
                 y_pos -= 1;
