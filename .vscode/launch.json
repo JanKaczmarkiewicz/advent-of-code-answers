@@ -31,7 +31,8 @@
                     "test",
                     "--no-run",
                     "--bin=advent-of-code-answers",
-                    "--package=advent-of-code-answers"
+                    "--package=advent-of-code-answers",
+                    "--nocapture"
                 ],
                 "filter": {
                     "name": "advent-of-code-answers",

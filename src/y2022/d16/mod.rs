@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 
 use crate::utils::read_lines;
-use itertools::Itertools;
-use rayon::prelude::*;
 
 pub fn answer() {
     println!("Answer to day16: {} {}", a1(), a2());
@@ -106,16 +104,58 @@ fn get_tunnels_map() -> HashMap<String, TunnelWithCost> {
 fn a1() -> usize {
     let mut map = get_tunnels_map();
 
-    let aa = map.remove("AA").unwrap();
+    let mut current_tunnel = map.remove("AA").unwrap();
 
-    map.values()
-        .permutations(map.len())
-        .map(|mut a| {
-            a.insert(0, &aa);
-            compute_path_score(a.iter().map(|a| *a))
+    let mut time = 30;
+
+    let mut score = 0;
+
+    println!("AA:");
+    while let Some(best_next_move) = map
+        .iter()
+        .map(|(tunnel_name, _)| {
+            let curr_t = map.get(tunnel_name).unwrap();
+
+            let time_when_moved = time - current_tunnel.paths.get(tunnel_name).unwrap() - 1;
+
+            let tunnel_score = time_when_moved * curr_t.valve_stress_release;
+            let system_score = map
+                .iter()
+                .filter(|other| other.0 != tunnel_name)
+                .map(|(other, t)| {
+                    (time_when_moved - curr_t.paths.get(other).unwrap()) * t.valve_stress_release
+                })
+                .sum::<usize>();
+
+            println!(
+                "  {tunnel_name}: {tunnel_score} {system_score} = {}",
+                (system_score as f64 / tunnel_score as f64)
+            );
+
+            (
+                tunnel_name.to_owned(),
+                tunnel_score,
+                (system_score + tunnel_score) / tunnel_score,
+                time_when_moved,
+            )
         })
-        .max()
-        .unwrap()
+        .max_by(|a, b| (a.2).cmp(&(b.2)))
+    {
+        time = best_next_move.3;
+        score += best_next_move.1;
+        current_tunnel = map.remove(&best_next_move.0).unwrap();
+        println!("{}:", best_next_move.0);
+    }
+
+    score
+    // map.values()
+    //     .permutations(map.len())
+    //     .map(|mut a| {
+    //         a.insert(0, &aa);
+    //         compute_path_score(a.iter().map(|a| *a))
+    //     })
+    //     .max()
+    //     .unwrap()
 }
 
 fn compute_path_score<'a>(path: impl Iterator<Item = &'a TunnelWithCost> + Clone) -> usize {

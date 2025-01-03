@@ -1,0 +1,10 @@
+{
+    "rust-analyzer": {
+        "runnables": {
+            "extraTestBinaryArgs": [
+                "--show-output",
+                "--nocapture"
+            ]
+        }
+    }
+}
