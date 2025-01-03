@@ -70,9 +70,6 @@ fn a1() -> usize {
     let mut stable_shapes: Vec<(i32, i32)> = vec![];
 
     for i in 0..2022 {
-        if i % 1000 == 0 {
-            print!("{i}");
-        }
         let mut x_pos = X_SPAWN_OFFSET;
         let mut y_pos = compute_highest_occupied_tile(&stable_shapes) + Y_SPAWN_OFFSET;
 
