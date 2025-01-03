@@ -69,7 +69,7 @@ fn a1() -> usize {
 
     let mut stable_shapes: Vec<(i32, i32)> = vec![];
 
-    for i in 0..1000000000000 {
+    for i in 0..2022 {
         if i % 1000 == 0 {
             print!("{i}");
         }
