@@ -62,7 +62,7 @@ fn a1() -> usize {
     let mut stable_shapes: Vec<(i32, i32)> = vec![];
     let mut highest_y_tile = 0;
 
-    for i in 0..2022 {
+    for i in 0_u64..1000000000000 {
         let mut x_pos = X_SPAWN_OFFSET;
         let mut y_pos = highest_y_tile + Y_SPAWN_OFFSET;
 
@@ -147,6 +147,15 @@ mod tests {
         assert_eq!(a1(), 3106);
     }
 
+    // PART 2:
+    // this algorythm does not work well on higher n
+    // Why? because stable_shapes keeps track of all occupied tiles and
+    // every time new shape lands its slows down operations dependent on stable_shapes
+    //
+    // Quick ideas:
+    // Would take to much time!  - clean stable_shapes after a while bc some parts are not available for shapes to enter: new floor is formed
+    // - the goal is to compute highest point This is just vague idea but is it possible to keep track of just a small window of board?
+    // - check for reccurence. At the end of operators it starts again. So if perfect floor is formed, with the same starting shape then it matter of multiplying remaining work;
     #[test]
     fn should_solve_second_problem() {
         assert_eq!(a2(), 0);
