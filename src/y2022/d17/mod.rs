@@ -55,14 +55,6 @@ pub fn answer() {
     println!("Answer to day17: {} {}", a1(), a2());
 }
 
-fn compute_highest_occupied_tile(stable_shapes: &Vec<(i32, i32)>) -> i32 {
-    stable_shapes
-        .iter()
-        .map(|(_, y)| *y)
-        .max()
-        .map_or(0, |x| x + 1)
-}
-
 fn a1() -> usize {
     let o = read("src/y2022/d17/input");
     let mut operators = o.chars().cycle();
