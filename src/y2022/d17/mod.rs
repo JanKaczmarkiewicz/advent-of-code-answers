@@ -138,7 +138,7 @@ fn a1() -> usize {
         }
     }
 
-    return compute_highest_occupied_tile(&stable_shapes) as usize;
+    return highest_y_tile as usize;
 }
 
 fn a2() -> usize {
