@@ -145,7 +145,7 @@ mod tests {
 
     #[test]
     fn should_solve_first_problem() {
-        assert_eq!(a1(), 0);
+        assert_eq!(a1(), 3106);
     }
 
     #[test]
