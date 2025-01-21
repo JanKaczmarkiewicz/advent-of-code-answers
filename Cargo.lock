@@ -6,6 +6,7 @@ version = 3
 name = "advent-of-code-answers"
 version = "0.1.0"
 dependencies = [
+ "array-init",
  "itertools",
  "pretty_assertions",
  "serde",
@@ -20,6 +21,12 @@ checksum = "d52a9bb7ec0cf484c551830a7ce27bd20d67eac647e1befb56b0be4ee39a55d2"
 dependencies = [
  "winapi",
 ]
+
+[[package]]
+name = "array-init"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d62b7694a562cdf5a74227903507c56ab2cc8bdd1f781ed5cb4cf9c9f810bfc"
 
 [[package]]
 name = "ctor"
