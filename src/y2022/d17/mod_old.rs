@@ -1,45 +1,65 @@
-use std::collections::HashSet;
-
-use ::array_init::array_init;
-
 use crate::utils::read;
 
+// Tetris
+// - -> + -> _| -> | -> square -> repeat
+// input: list of <,> that pushes shape left or right, repeats
+// chamber: 7 units wide
 const CHAMBER_LENGTH: i32 = 7;
-const INPUT_SIZE: usize = 10091;
-const NR_OF_SHAPES: usize = 5;
-const X_SPAWN_OFFSET: i32 = 2;
 const Y_SPAWN_OFFSET: i32 = 3;
+const X_SPAWN_OFFSET: i32 = 2;
+// shape spawns on the left two units from a wall and 3 units above rock/ground
+// |11**   |
+// |  **   |
+// |       1
+// |       1
+// |       1
+// | *     |
+// |***    |
+// 00*     |
+// ---------
+
+// Procedure:
+// rock is being pushed to the right or left by gas, bounce check: wall or other rock (prevents movement)
+// rock is moved down, if it is not possible then a new rock is spawned
+
+// calculate_shell(tiles: HashSet<Cords>)
+// calculate_shell(tiles: HashSet<Cords>)
+
+// 2022 rocks are spawned
+
+// Current plan:
+// every time shape is stabalized recalculate surface of tower.
+// Data structure: hash set that will contain cords of tiles that are on the boudary
+// Update: after placing shape some of cords will be no longer needed. Cords will have to be recalculated (from right to left)
+// Update algorithm:
+
+// Visualization:
+
+// Find tiles that are visible from the {top-always, left-when count(tiles with x cord)==0, right-when count(tiles with x cord)==6}
+//   |
+// ||*|  | |
+// |*** |* |
+// | * |* ||
+// |  ** **|
+// ||*  *  |
+// ---------
+
+// |       |
+// |     * |
+// | *  *  |
+// |  ** *s|
+// | *  *  |
+// ---------
 
 pub fn answer() {
     println!("Answer to day17: {} {}", a1(), a2());
 }
 
-// State:
-//      shapes: [5] + operator index [10091] + stage [unbounded] : hashed as u128
-// Problem how to hash a stage - say I compute external top layer of structure and subtract highest y
-// it needs to be unique:
-// ######*
-// #*####*
-// #####** -> ######* #*####* #####** ******* ##*##** -> 0000001 0100001 0100001 ... -> lets start with fixed -> u128 (or Vec[u128])
-// *******
-// ##*##**
-
-fn hash_space(space: &HashSet<(i32, i32)>) -> u128 {
-    let lowest_y = space.iter().map(|(_, y)| *y).min().unwrap_or(0);
-    let mut hash = 0;
-    for (x, y) in space {
-        let bit_position = CHAMBER_LENGTH * (y - lowest_y + 1) - x;
-        hash |= 1 << bit_position;
-    }
-    return hash;
-}
-
 fn a1() -> usize {
     let o = read("src/y2022/d17/input");
-    let mut operators = o.chars().enumerate().cycle().peekable();
-    let mut state: [HashSet<u128>; INPUT_SIZE * NR_OF_SHAPES] = array_init(|_| HashSet::new());
-    // if for the same shape, operator and stage
-    let mut stable_shapes = HashSet::new();
+    let mut operators = o.chars();
+
+    let mut stable_shapes: Vec<(i32, i32)> = vec![];
     let mut highest_y_tile = 0;
 
     for i in 0_u64..1000000000000 {
@@ -47,7 +67,7 @@ fn a1() -> usize {
         let mut y_pos = highest_y_tile + Y_SPAWN_OFFSET;
 
         // positions start from the top
-        let shape_blocks: &[(i32, i32)] = match i % NR_OF_SHAPES as u64 {
+        let shape_blocks: &[(i32, i32)] = match i % 5 {
             0 => &[(0, 0), (1, 0), (2, 0), (3, 0)],         // '-'
             1 => &[(1, 0), (1, 1), (1, 2), (0, 1), (2, 1)], // '+'
             2 => &[(2, 0), (2, 1), (2, 2), (1, 0), (0, 0)], // 'L'
@@ -56,17 +76,24 @@ fn a1() -> usize {
             _ => panic!("NOT POSSIBLE"),
         };
 
-        let stable_shapes_hash = hash_space(&stable_shapes);
-
-        let is_present =
-            !state[i as usize * operators.peek().unwrap().0].insert(stable_shapes_hash);
-
-        if is_present {
-            // instead of going throught all the iterations I can advance the i hub s
-        }
         loop {
+            let operator = operators.next();
+
+            if operator.is_none() {
+                for y in (highest_y_tile - 20..highest_y_tile).rev() {
+                    for x in 0..CHAMBER_LENGTH {
+                        if stable_shapes.contains(&(x, y)) {
+                            print!("#")
+                        } else {
+                            print!(" ")
+                        }
+                    }
+                    println!();
+                }
+            }
+
             // operator action
-            match operators.next().unwrap().1 {
+            match operator.unwrap() {
                 '<' => {
                     let is_collision_after_move = shape_blocks
                         .iter()
@@ -101,11 +128,7 @@ fn a1() -> usize {
                 .any(|(x, y)| y - 1 < 0 || stable_shapes.contains(&(x, y - 1)));
 
             if is_collision_after_move {
-                stable_shapes.extend(shape_blocks.iter().map(|(x, y)| (x + x_pos, y + y_pos)));
-                // TODO: sanitize hash_space
-                // Why do I need to sanitize? Sanitizations strips inreachable destinations so
-                // it is then ready to hash for uniques, and efficient in futrure computation
-                // OPTIMALIZTION: filter all tiles that are not as a outside shape
+                stable_shapes.extend(shape_blocks.iter().map(|(x, y)| (x + x_pos, y + y_pos))); // OPTIMALIZTION: filter all tiles that are not as a outside shape
                 highest_y_tile = highest_y_tile.max(
                     shape_blocks
                         .iter()
@@ -139,28 +162,6 @@ mod tests {
         assert_eq!(a1(), 3106);
     }
 
-    #[test]
-    fn hash_space_should_return_a_number_that_binary_representation_have_1_where_space_has_solid_object(
-    ) {
-        let mut space = HashSet::new();
-
-        /*
-        |1000000|
-        |1100000| -> 1000000 1100000 1000000 0000001
-        |1000000|
-        |0000001|
-         */
-
-        space.insert((0, 1));
-        space.insert((0, 2));
-        space.insert((0, 3));
-        space.insert((1, 2));
-        space.insert((7, 0));
-
-        println!("{:b}", hash_space(&space));
-        assert_eq!(hash_space(&space), 0b1000000_1100000_10000000_0000001);
-    }
-
     // PART 2:
     // this algorythm does not work well on higher n
     // Why? because stable_shapes keeps track of all occupied tiles and
@@ -175,17 +176,4 @@ mod tests {
     fn should_solve_second_problem() {
         assert_eq!(a2(), 0);
     }
-
-    // Supposed goal: If I detect some cyclic behavior I can reduce its complexity by caching the result.
-
-    // Current flow is like this:
-
-    // for n:
-    //      spawn shape
-    //      loop:
-    //          move shape horizontaly
-    //          if try move shape verticaly {} else { break }
-
-    // additionaly keep track of history and based on the shape and moves detect ciclicity? No, there is external state
-    // What does it mean to pattern to repeat? What is the pattern?
 }
