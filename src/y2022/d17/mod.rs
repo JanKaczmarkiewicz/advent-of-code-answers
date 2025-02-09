@@ -23,12 +23,21 @@ pub fn answer() {
 // #####** -> ######* #*####* #####** ******* ##*##** -> 0000001 0100001 0100001 ... -> lets start with fixed -> u128 (or Vec[u128])
 // *******
 // ##*##**
+/*
 
-fn hash_space(space: &HashSet<(i32, i32)>) -> u128 {
-    let lowest_y = space.iter().map(|(_, y)| *y).min().unwrap_or(0);
+        |0000001|
+        |0000001|
+   20 > |0000001| < 14
+   13 > |1111111| < 7
+    6 > |1010101| < 0
+*/
+
+fn hash_space(space: &HashSet<(i32, i32)>, highest_y_tile: i32) -> u128 {
+    const CUT_AT: i32 = 17;
+    let lowest_y = (highest_y_tile - CUT_AT).max(0);
     let mut hash = 0;
-    for (x, y) in space {
-        let bit_position = CHAMBER_LENGTH * (y - lowest_y + 1) - x;
+    for (x, y) in space.iter().filter(|(_, y)| *y >= lowest_y) {
+        let bit_position = CHAMBER_LENGTH - 1 + (CHAMBER_LENGTH) * (y - lowest_y) - x;
         hash |= 1 << bit_position;
     }
     return hash;
@@ -56,7 +65,7 @@ fn a1() -> usize {
             _ => panic!("NOT POSSIBLE"),
         };
 
-        let stable_shapes_hash = hash_space(&stable_shapes);
+        let stable_shapes_hash = hash_space(&stable_shapes, highest_y_tile);
 
         let is_present =
             !state[i as usize * operators.peek().unwrap().0].insert(stable_shapes_hash);
@@ -102,18 +111,53 @@ fn a1() -> usize {
 
             if is_collision_after_move {
                 stable_shapes.extend(shape_blocks.iter().map(|(x, y)| (x + x_pos, y + y_pos)));
+
                 // TODO: sanitize hash_space
                 // Why do I need to sanitize? Sanitizations strips inreachable destinations so
-                // it is then ready to hash for uniques, and efficient in futrure computation
+                // it is then ready to hash for uniques, and efficient in future computation
                 // OPTIMALIZTION: filter all tiles that are not as a outside shape
+
+                /*
+                Is this actually nessesery? I dont think so (a bit sketchy but it should work)
+                Imagine following situation
+
+                |#      |
+                |#      |
+                |##     |
+                |###    |
+                |###    |
+                ---------
+
+                and
+
+                |#      |
+                |#      |
+                |##     |
+                |###    |
+                |###    |
+                |  #####|
+                |#      |
+                |#      |
+                |##     |
+                |###    |
+                |###    |
+                ---------
+
+                In first situation there is pattern that repeats in the second one.
+                Now I will pick some n which will indicate nr of lines considered eg 18 because 128 / 7 = 18.28
+
+                The quickest way is to just implement it
+                 */
+
                 highest_y_tile = highest_y_tile.max(
                     shape_blocks
                         .iter()
-                        .map(|(x, y)| (x + x_pos, y + y_pos))
-                        .map(|(_, y)| y)
+                        .map(|(_, y)| y + y_pos)
                         .max()
                         .map_or(0, |x| x + 1),
                 );
+
+                // pick only those tiles that are
 
                 break;
             } else {
@@ -151,14 +195,89 @@ mod tests {
         |0000001|
          */
 
-        space.insert((0, 1));
-        space.insert((0, 2));
-        space.insert((0, 3));
-        space.insert((1, 2));
-        space.insert((7, 0));
+        // space.insert((0, 3));
 
-        println!("{:b}", hash_space(&space));
-        assert_eq!(hash_space(&space), 0b1000000_1100000_10000000_0000001);
+        // space.insert((0, 2));
+        // space.insert((1, 2));
+
+        space.insert((0, 1));
+
+        space.insert((CHAMBER_LENGTH - 1, 0));
+
+        // assert_eq!(hash_space(&space, 3), 0b1000000_1100000_10000000_0000001);
+        assert_eq!(hash_space(&space, 3), 0b0000000_0000000_1000000_0000001);
+    }
+
+    #[test]
+    fn hash_space_should_return_striped_lower_part() {
+        let mut space = HashSet::new();
+
+        /*
+             |1000000|
+             |1100000| -> 1000000 1100000 1000000 0000001
+             |1000000|
+             |0000001|
+             |0000001|16
+             |0000001|
+             |0000001|
+             |0000001|
+             |0000001|
+             |0000001|10
+             |0000001|
+             |0000001|
+             |0000001|
+             |0000001|
+             |0000001|
+             |0000001|
+             |0000001|
+        20 > |0000001| < 14
+        13 > |1111111| < 7
+         6 > |1010101| < 0
+              */
+
+        space.insert((0, 20));
+
+        space.insert((0, 19));
+        space.insert((1, 19));
+
+        space.insert((0, 18));
+
+        space.insert((6, 17));
+        space.insert((6, 16));
+        space.insert((6, 15));
+        space.insert((6, 14));
+        space.insert((6, 13));
+        space.insert((6, 12));
+        space.insert((6, 11));
+        space.insert((6, 10));
+        space.insert((6, 9));
+        space.insert((6, 8));
+        space.insert((6, 7));
+        space.insert((6, 6));
+        space.insert((6, 5));
+        space.insert((6, 4));
+        space.insert((6, 3));
+        space.insert((6, 2));
+
+        space.insert((0, 1));
+        space.insert((1, 1));
+        space.insert((2, 1));
+        space.insert((3, 1));
+        space.insert((4, 1));
+        space.insert((5, 1));
+        space.insert((6, 1));
+
+        space.insert((0, 0));
+        space.insert((2, 0));
+        space.insert((4, 0));
+        space.insert((6, 0));
+
+        let highest_y = space.iter().map(|(_, y)| y).max().unwrap();
+
+        assert_eq!(
+            hash_space(&space, *highest_y),
+            0b1000000_1100000_1000000_0000001_0000001_0000001_0000001_0000001_0000001_0000001_0000001_0000001_0000001_0000001_0000001_0000001_0000001_0000001
+        );
     }
 
     // PART 2:
