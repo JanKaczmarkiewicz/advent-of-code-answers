@@ -57,4 +57,5 @@ fn main() {
     y2022::d15::answer();
     y2022::d16::answer();
     y2022::d17::answer();
+    y2022::d18::answer();
 }
