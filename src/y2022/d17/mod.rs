@@ -7,21 +7,12 @@ const CHAMBER_LENGTH: i128 = 7;
 const NR_OF_SHAPES: i128 = 5;
 const X_SPAWN_OFFSET: i128 = 2;
 const Y_SPAWN_OFFSET: i128 = 3;
-const EPOCHS: i128 = 1000000000000;
+const EPOCHS_P1: i128 = 2022;
+const EPOCHS_P2: i128 = 1000000000000;
 
 pub fn answer() {
-    println!("Answer to day17: {} {}", a1(), a2());
+    println!("Answer to day17: {} {}", solve(EPOCHS_P1), solve(EPOCHS_P2));
 }
-
-// State:
-//      shapes: [5] + operator index [10091] + stage [unbounded] : hashed as i128
-// Problem how to hash a stage - say I compute external top layer of structure and subtract highest y
-// it needs to be unique:
-// ######*
-// #*####*
-// #####** -> ######* #*####* #####** ******* ##*##** -> 0000001 0100001 0100001 ... -> lets start with fixed -> i128 (or Vec[i128])
-// *******
-// ##*##**
 
 fn hash_space(space: &HashSet<(i128, i128)>, highest_y_tile: i128) -> u128 {
     const CUT_AT: i128 = 17;
@@ -34,12 +25,7 @@ fn hash_space(space: &HashSet<(i128, i128)>, highest_y_tile: i128) -> u128 {
     return hash;
 }
 
-// What needs to be done?
-// 1. compute up to the point of finding ciclicity
-// 2. advance for as much of detected ciclicity as possible
-// 3. continue for remaining
-
-fn a1() -> usize {
+fn solve(epochs: i128) -> usize {
     let o = read("src/y2022/d17/input");
     let input_size = o.len();
     let mut operators = o.chars().enumerate().cycle().peekable();
@@ -56,7 +42,7 @@ fn a1() -> usize {
 
     let mut is_ciclicity_detected = false;
     let mut i = 0;
-    while i < EPOCHS {
+    while i < epochs {
         let mut x_pos: i128 = X_SPAWN_OFFSET;
         let mut y_pos: i128 = highest_y_tile + Y_SPAWN_OFFSET;
         let shape_nr = (i % NR_OF_SHAPES) as usize;
@@ -135,7 +121,7 @@ fn a1() -> usize {
                 let i_difference = i - prev_i; // how many shapes had been placed since last state like this
                 let height_difference = highest_y_tile - prev_highest_y_tile;
                 let nr_of_possible_skips =
-                    ((EPOCHS - i) as f64 / i_difference as f64).floor() as i128;
+                    ((epochs - i) as f64 / i_difference as f64).floor() as i128;
 
                 // update height of points
                 let mut new_stable_shapes = HashSet::with_capacity(stable_shapes.capacity());
@@ -146,7 +132,7 @@ fn a1() -> usize {
 
                 // update interation point
                 i += i_difference * nr_of_possible_skips;
-                highest_y_tile += height_difference * nr_of_possible_skips; // stable_shapes.iter().map(|(_, y)| y).max().unwrap();
+                highest_y_tile += height_difference * nr_of_possible_skips;
 
                 is_ciclicity_detected = true;
             }
@@ -158,10 +144,6 @@ fn a1() -> usize {
     return highest_y_tile as usize;
 }
 
-fn a2() -> usize {
-    0
-}
-
 #[cfg(test)]
 mod tests {
 
@@ -169,7 +151,7 @@ mod tests {
 
     #[test]
     fn should_solve_first_problem() {
-        assert_eq!(a1(), 3106);
+        assert_eq!(solve(EPOCHS_P1), 3106);
     }
 
     #[test]
@@ -184,17 +166,16 @@ mod tests {
         |0000001|
          */
 
-        // space.insert((0, 3));
+        space.insert((0, 3));
 
-        // space.insert((0, 2));
-        // space.insert((1, 2));
+        space.insert((0, 2));
+        space.insert((1, 2));
 
         space.insert((0, 1));
 
         space.insert((CHAMBER_LENGTH - 1, 0));
 
-        // assert_eq!(hash_space(&space, 3), 0b1000000_1100000_10000000_0000001);
-        assert_eq!(hash_space(&space, 3), 0b0000000_0000000_1000000_0000001);
+        assert_eq!(hash_space(&space, 3), 0b1000000_1100000_10000000_0000001);
     }
 
     #[test]
@@ -269,31 +250,8 @@ mod tests {
         );
     }
 
-    // PART 2:
-    // this algorythm does not work well on higher n
-    // Why? because stable_shapes keeps track of all occupied tiles and
-    // every time new shape lands its slows down operations dependent on stable_shapes
-    //
-    // Quick ideas:
-    // Would take to much time!  - clean stable_shapes after a while bc some parts are not available for shapes to enter: new floor is formed
-    // - the goal is to compute highest point This is just vague idea but is it possible to keep track of just a small window of board?
-    // WORKING ON THIS - check for reccurence. At the end of operators it starts again. So if perfect floor is formed, with the same starting shape then it matter of multiplying remaining work;
-    // Break at iterator end and display first 10 ish y tiles from the top
     #[test]
     fn should_solve_second_problem() {
-        assert_eq!(a1(), 0);
+        assert_eq!(solve(EPOCHS_P2), 1537175792495);
     }
-
-    // Supposed goal: If I detect some cyclic behavior I can reduce its complexity by caching the result.
-
-    // Current flow is like this:
-
-    // for n:
-    //      spawn shape
-    //      loop:
-    //          move shape horizontaly
-    //          if try move shape verticaly {} else { break }
-
-    // additionaly keep track of history and based on the shape and moves detect ciclicity? No, there is external state
-    // What does it mean to pattern to repeat? What is the pattern?
 }
