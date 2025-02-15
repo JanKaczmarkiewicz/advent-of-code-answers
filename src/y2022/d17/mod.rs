@@ -1,41 +1,32 @@
-use std::collections::HashSet;
-
-use ::array_init::array_init;
+use std::collections::{HashMap, HashSet};
 
 use crate::utils::read;
 
-const CHAMBER_LENGTH: i32 = 7;
-const INPUT_SIZE: usize = 10091;
-const NR_OF_SHAPES: usize = 5;
-const X_SPAWN_OFFSET: i32 = 2;
-const Y_SPAWN_OFFSET: i32 = 3;
+const CHAMBER_LENGTH: i128 = 7;
+
+const NR_OF_SHAPES: i128 = 5;
+const X_SPAWN_OFFSET: i128 = 2;
+const Y_SPAWN_OFFSET: i128 = 3;
+const EPOCHS: i128 = 1000000000000;
 
 pub fn answer() {
     println!("Answer to day17: {} {}", a1(), a2());
 }
 
 // State:
-//      shapes: [5] + operator index [10091] + stage [unbounded] : hashed as u128
+//      shapes: [5] + operator index [10091] + stage [unbounded] : hashed as i128
 // Problem how to hash a stage - say I compute external top layer of structure and subtract highest y
 // it needs to be unique:
 // ######*
 // #*####*
-// #####** -> ######* #*####* #####** ******* ##*##** -> 0000001 0100001 0100001 ... -> lets start with fixed -> u128 (or Vec[u128])
+// #####** -> ######* #*####* #####** ******* ##*##** -> 0000001 0100001 0100001 ... -> lets start with fixed -> i128 (or Vec[i128])
 // *******
 // ##*##**
-/*
 
-        |0000001|
-        |0000001|
-   20 > |0000001| < 14
-   13 > |1111111| < 7
-    6 > |1010101| < 0
-*/
-
-fn hash_space(space: &HashSet<(i32, i32)>, highest_y_tile: i32) -> u128 {
-    const CUT_AT: i32 = 17;
-    let lowest_y = (highest_y_tile - CUT_AT).max(0);
-    let mut hash = 0;
+fn hash_space(space: &HashSet<(i128, i128)>, highest_y_tile: i128) -> u128 {
+    const CUT_AT: i128 = 17;
+    let lowest_y = (highest_y_tile as i128 - CUT_AT as i128).max(0) as i128;
+    let mut hash: u128 = 0;
     for (x, y) in space.iter().filter(|(_, y)| *y >= lowest_y) {
         let bit_position = CHAMBER_LENGTH - 1 + (CHAMBER_LENGTH) * (y - lowest_y) - x;
         hash |= 1 << bit_position;
@@ -43,20 +34,35 @@ fn hash_space(space: &HashSet<(i32, i32)>, highest_y_tile: i32) -> u128 {
     return hash;
 }
 
+// What needs to be done?
+// 1. compute up to the point of finding ciclicity
+// 2. advance for as much of detected ciclicity as possible
+// 3. continue for remaining
+
 fn a1() -> usize {
     let o = read("src/y2022/d17/input");
+    let input_size = o.len();
     let mut operators = o.chars().enumerate().cycle().peekable();
-    let mut state: [HashSet<u128>; INPUT_SIZE * NR_OF_SHAPES] = array_init(|_| HashSet::new());
+
+    let mut hashes =
+        Vec::<HashMap<u128, (i128, i128)>>::with_capacity(input_size * NR_OF_SHAPES as usize);
+    for _ in 0..input_size * NR_OF_SHAPES as usize {
+        hashes.push(HashMap::new());
+    }
+
     // if for the same shape, operator and stage
     let mut stable_shapes = HashSet::new();
     let mut highest_y_tile = 0;
 
-    for i in 0_u64..1000000000000 {
-        let mut x_pos = X_SPAWN_OFFSET;
-        let mut y_pos = highest_y_tile + Y_SPAWN_OFFSET;
+    let mut is_ciclicity_detected = false;
+    let mut i = 0;
+    while i < EPOCHS {
+        let mut x_pos: i128 = X_SPAWN_OFFSET;
+        let mut y_pos: i128 = highest_y_tile + Y_SPAWN_OFFSET;
+        let shape_nr = (i % NR_OF_SHAPES) as usize;
 
         // positions start from the top
-        let shape_blocks: &[(i32, i32)] = match i % NR_OF_SHAPES as u64 {
+        let shape_blocks: &[(i128, i128)] = match shape_nr {
             0 => &[(0, 0), (1, 0), (2, 0), (3, 0)],         // '-'
             1 => &[(1, 0), (1, 1), (1, 2), (0, 1), (2, 1)], // '+'
             2 => &[(2, 0), (2, 1), (2, 2), (1, 0), (0, 0)], // 'L'
@@ -65,14 +71,6 @@ fn a1() -> usize {
             _ => panic!("NOT POSSIBLE"),
         };
 
-        let stable_shapes_hash = hash_space(&stable_shapes, highest_y_tile);
-
-        let is_present =
-            !state[i as usize * operators.peek().unwrap().0].insert(stable_shapes_hash);
-
-        if is_present {
-            // instead of going throught all the iterations I can advance the i hub s
-        }
         loop {
             // operator action
             match operators.next().unwrap().1 {
@@ -112,43 +110,6 @@ fn a1() -> usize {
             if is_collision_after_move {
                 stable_shapes.extend(shape_blocks.iter().map(|(x, y)| (x + x_pos, y + y_pos)));
 
-                // TODO: sanitize hash_space
-                // Why do I need to sanitize? Sanitizations strips inreachable destinations so
-                // it is then ready to hash for uniques, and efficient in future computation
-                // OPTIMALIZTION: filter all tiles that are not as a outside shape
-
-                /*
-                Is this actually nessesery? I dont think so (a bit sketchy but it should work)
-                Imagine following situation
-
-                |#      |
-                |#      |
-                |##     |
-                |###    |
-                |###    |
-                ---------
-
-                and
-
-                |#      |
-                |#      |
-                |##     |
-                |###    |
-                |###    |
-                |  #####|
-                |#      |
-                |#      |
-                |##     |
-                |###    |
-                |###    |
-                ---------
-
-                In first situation there is pattern that repeats in the second one.
-                Now I will pick some n which will indicate nr of lines considered eg 18 because 128 / 7 = 18.28
-
-                The quickest way is to just implement it
-                 */
-
                 highest_y_tile = highest_y_tile.max(
                     shape_blocks
                         .iter()
@@ -156,14 +117,42 @@ fn a1() -> usize {
                         .max()
                         .map_or(0, |x| x + 1),
                 );
-
-                // pick only those tiles that are
-
                 break;
             } else {
                 y_pos -= 1;
             }
         }
+
+        if !is_ciclicity_detected {
+            let stable_shapes_hash = hash_space(&stable_shapes, highest_y_tile);
+
+            let operator_index = operators.peek().unwrap().0;
+
+            if let Some((prev_i, prev_highest_y_tile)) = hashes
+                [shape_nr * input_size + operator_index]
+                .insert(stable_shapes_hash, (i, highest_y_tile))
+            {
+                let i_difference = i - prev_i; // how many shapes had been placed since last state like this
+                let height_difference = highest_y_tile - prev_highest_y_tile;
+                let nr_of_possible_skips =
+                    ((EPOCHS - i) as f64 / i_difference as f64).floor() as i128;
+
+                // update height of points
+                let mut new_stable_shapes = HashSet::with_capacity(stable_shapes.capacity());
+                for (x, y) in stable_shapes {
+                    new_stable_shapes.insert((x, y + height_difference * nr_of_possible_skips));
+                }
+                stable_shapes = new_stable_shapes;
+
+                // update interation point
+                i += i_difference * nr_of_possible_skips;
+                highest_y_tile += height_difference * nr_of_possible_skips; // stable_shapes.iter().map(|(_, y)| y).max().unwrap();
+
+                is_ciclicity_detected = true;
+            }
+        }
+
+        i += 1;
     }
 
     return highest_y_tile as usize;
@@ -292,7 +281,7 @@ mod tests {
     // Break at iterator end and display first 10 ish y tiles from the top
     #[test]
     fn should_solve_second_problem() {
-        assert_eq!(a2(), 0);
+        assert_eq!(a1(), 0);
     }
 
     // Supposed goal: If I detect some cyclic behavior I can reduce its complexity by caching the result.
