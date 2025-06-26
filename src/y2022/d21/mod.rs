@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use serde_json::map;
-
 use crate::utils::read_lines;
 
+pub mod p2;
+
 pub fn answer() {
-    println!("Answer to dayxb: {} {}", a1(), a2());
+    println!("Answer to day21a: {}", a1());
 }
 
 enum Operation {
@@ -59,11 +59,6 @@ fn a1() -> i64 {
     get_value_rec("root", &map)
 }
 
-fn a2() -> i64 {
-    let mut list = read_lines("src/y2022/d21/input");
-    0
-}
-
 #[cfg(test)]
 mod tests {
 
@@ -72,10 +67,5 @@ mod tests {
     #[test]
     fn should_solve_first_problem() {
         assert_eq!(a1(), 56490240862410);
-    }
-
-    #[test]
-    fn should_solve_second_problem() {
-        assert_eq!(a2(), 0);
     }
 }

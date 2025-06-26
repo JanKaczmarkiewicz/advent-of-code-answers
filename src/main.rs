@@ -61,4 +61,5 @@ fn main() {
     y2022::d19::answer();
     y2022::d20::answer();
     y2022::d21::answer();
+    y2022::d21::p2::answer();
 }
