@@ -1,6 +1,6 @@
 use crate::utils::read_lines;
 
-pub fn answer() {
+pub fn answer() -> i64 {
     read_lines("src/y2022/dXX/input");
 
     0
