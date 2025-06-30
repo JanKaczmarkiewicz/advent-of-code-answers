@@ -1,7 +1,7 @@
 use crate::utils::read_lines;
 
 pub fn answer() -> i64 {
-    read_lines("src/y2022/dXX/input");
+    read_lines("src/y2022/d22/input");
 
     0
 }
@@ -13,6 +13,6 @@ mod tests {
 
     #[test]
     fn should_compute_solution() {
-        assert_eq!(answer(), 0);
+        assert_eq!(answer(), 6032);
     }
 }
