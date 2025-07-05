@@ -1,0 +1,94 @@
+        1111
+        1111
+        1111
+        1111
+222233334444
+222233334444
+222233334444
+222233334444
+        55556666
+        55556666
+        55556666
+        55556666
+
+
+Step 1. convert input to abstract representation:
+
+1: (2,0)
+2: (0,1)
+3: (1,1)
+4: (2,1)
+5: (2,2)
+6: (3,2)
+
+and parse every field separately
+
+HashMap<Number_ID, FieldMatrix>
+
+Step 2. Form cube like representation
+
+
+(rotations are clockwise)
+
+1: (
+    top: 2 180deg, 
+    bottom: 4 0deg,
+    right: 6 180deg,
+    left: 3 90deg,
+)
+
+2: (
+    top: 1 180deg, 
+    bottom: 5 180deg,
+    right: 3 0deg,
+    left: 3 270deg,
+)
+
+3: (
+    top: 1 270deg, 
+    bottom: 5 90deg,
+    right: 4 0deg,
+    left: 2 0deg,
+)
+
+4: (
+    top: 1 0deg, 
+    bottom: 5 0deg,
+    right: 6 270deg,
+    left: 3 270deg,
+)
+
+5: (
+    top: 4 0deg, 
+    bottom: 2 180deg,
+    right: 6 0deg,
+    left: 3 270deg,
+)
+
+6: (
+    top: 4 90deg, 
+    bottom: 2 90deg,
+    right: 1 180deg,
+    left: 5 0deg,
+)
+
+0 degs are easiest to fill in: its just imidiete awsd fields
+
+90 degs:
+    3 (1,1) to 5 (2,2)
+    1 (2,0) to 3 (1,1)
+    6 (3,2) to 4 (2,1)
+    6 (3,2) to 2 (0,1)
+
+Uh, so one way to solve this to have a pattern matching per every relative case and assign accoridingly
+    eg if down-right assign it to right + 270deg: 
+    4 if let Some(n) = get(cord + (1, -1)) { 4.right = "{n} 90deg" }
+
+
+
+
+
+
+
+
+        
