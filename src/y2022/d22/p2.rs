@@ -1,6 +1,5 @@
-use core::panic;
-
 use crate::utils::read;
+use itertools::Itertools;
 
 #[derive(PartialEq, Eq, Debug)]
 enum Tile {
@@ -9,22 +8,15 @@ enum Tile {
 }
 
 #[derive(PartialEq, Debug)]
-struct Rotation(u8);
-
-impl Rotation {
-    // TODO take
-}
-
-#[derive(PartialEq, Debug)]
 struct Face {
     locations: Vec<Vec<Tile>>,
-    top: (usize, Rotation),
-    bottom: (usize, Rotation),
-    left: (usize, Rotation),
-    right: (usize, Rotation),
+    top: (usize, usize),
+    bottom: (usize, usize),
+    left: (usize, usize),
+    right: (usize, usize),
 }
 
-fn parse_cube_map(map_raw: &str) -> Vec<Face> {
+fn parse_cube_map(map_raw: &str) -> Vec<((usize, usize), Face)> {
     let map_chars = map_raw
         .split("\n")
         .map(|s| s.chars().collect::<Vec<_>>())
@@ -74,6 +66,7 @@ fn parse_cube_map(map_raw: &str) -> Vec<Face> {
             col = 0;
         }
     }
+    // Might be some bugs because of order in checks
     abstract_representation_locations
         .into_iter()
         .zip(abstract_representation_positions.iter())
@@ -88,64 +81,199 @@ fn parse_cube_map(map_raw: &str) -> Vec<Face> {
             };
 
             let top = [
-                check_for_face(0, -1).map(|n| (n, Rotation(0))),
-                check_for_face(1, -1).map(|n| (n, Rotation(3))),
-                check_for_face(-1, -1).map(|n| (n, Rotation(1))),
-                check_for_face(0, 3).map(|n| (n, Rotation(2))),
+                check_for_face(0, -1).map(|n| (n, 0)),
+                check_for_face(1, -1).map(|n| (n, 1)), // prev 3
+                check_for_face(-1, -1).map(|n| (n, 1)),
+                check_for_face(0, 3).map(|n| (n, 2)),
+                check_for_face(-2, 1).map(|n| (n, 2)),
+                check_for_face(-1, 3).map(|n| (n, 1)),
+                check_for_face(-2, 3).map(|n| (n, 2)),
+                check_for_face(2, -1).map(|n| (n, 2)),
             ]
             .into_iter()
             .find_map(|e| e)
             .unwrap();
             let bottom = [
-                check_for_face(0, 1).map(|n| (n, Rotation(0))),
-                check_for_face(1, 1).map(|n| (n, Rotation(1))),
-                check_for_face(-1, 1).map(|n| (n, Rotation(3))),
-                check_for_face(0, -3).map(|n| (n, Rotation(0))),
+                check_for_face(0, 1).map(|n| (n, 0)),
+                check_for_face(1, 1).map(|n| (n, 1)),
+                check_for_face(-1, 1).map(|n| (n, 3)),
+                check_for_face(0, -3).map(|n| (n, 0)),
+                check_for_face(2, 1).map(|n| (n, 2)),
+                check_for_face(2, -3).map(|n| (n, 2)),
+                check_for_face(-2, -1).map(|n| (n, 2)),
             ]
             .into_iter()
             .find_map(|e| e)
             .unwrap();
             let left = [
-                check_for_face(-1, 0).map(|n| (n, Rotation(0))),
-                check_for_face(-1, 1).map(|n| (n, Rotation(1))),
-                check_for_face(-1, -1).map(|n| (n, Rotation(3))),
-                check_for_face(1, 2).map(|n| (n, Rotation(2))),
-                //(-1, -2)
-                check_for_face(1, -2).map(|n| (n, Rotation(2))),
+                check_for_face(-1, 0).map(|n| (n, 0)),
+                check_for_face(-1, 1).map(|n| (n, 1)),
+                check_for_face(-1, -1).map(|n| (n, 3)),
+                check_for_face(1, 2).map(|n| (n, 2)),
+                check_for_face(1, -2).map(|n| (n, 2)),
+                check_for_face(-1, 2).map(|n| (n, 2)),
+                check_for_face(3, 1).map(|n| (n, 3)),
             ]
             .into_iter()
             .find_map(|e| e)
             .unwrap();
             let right = [
-                check_for_face(1, 0).map(|n| (n, Rotation(0))),
-                check_for_face(1, 1).map(|n| (n, Rotation(3))),
-                check_for_face(1, -1).map(|n| (n, Rotation(1))),
-                check_for_face(-1, 2).map(|n| (n, Rotation(2))),
-                check_for_face(1, -2).map(|n| (n, Rotation(2))),
+                check_for_face(1, 0).map(|n| (n, 0)),
+                check_for_face(1, 1).map(|n| (n, 1)), // prev 3
+                check_for_face(1, -1).map(|n| (n, 1)),
+                check_for_face(-1, 2).map(|n| (n, 2)),
+                check_for_face(1, -2).map(|n| (n, 2)),
+                check_for_face(1, 2).map(|n| (n, 2)),
+                check_for_face(-1, -2).map(|n| (n, 2)),
             ]
             .into_iter()
             .find_map(|e| e)
             .unwrap();
-
-            Face {
-                locations,
-                top,
-                bottom,
-                left,
-                right,
-            }
+            (
+                (*col, *row),
+                Face {
+                    locations,
+                    top,
+                    bottom,
+                    left,
+                    right,
+                },
+            )
         })
         .collect()
 }
 
-pub fn answer() -> i64 {
+fn rotate((x, y): (i32, i32)) -> (i32, i32) {
+    (-y, x)
+}
+
+pub fn answer() -> i32 {
     let all = read("src/y2022/d22/input");
     let mut iter = all.split("\n\n");
 
-    let cube_map = parse_cube_map(iter.next().unwrap());
-    let operation_raw = iter.next().unwrap();
+    let map_raw = iter.next().unwrap();
+    let operations_raw = iter.next().unwrap();
 
-    0
+    let cube_map = parse_cube_map(map_raw);
+
+    let perspective_up = (0, -1);
+    let perspective_right = (1, 0);
+    let perspective_down = (0, 1);
+    let perspective_left = (-1, 0);
+
+    let mut perspective: (i32, i32) = perspective_right;
+    let mut position = (0, 0);
+    let mut current_map = &cube_map[0];
+    let mut current_rotation = 0;
+
+    let mut chars = operations_raw.chars();
+
+    while let Ok(n) = chars
+        .peeking_take_while(|x| x.is_numeric())
+        .collect::<String>()
+        .parse::<u64>()
+    {
+        println!(
+            "Loop {n} {}",
+            if perspective == perspective_up {
+                "up"
+            } else if perspective == perspective_right {
+                "right"
+            } else if perspective == perspective_down {
+                "down"
+            } else {
+                "left"
+            }
+        );
+        // add position go times (check for colision)
+        for _ in 0..n {
+            let rotated_perspective =
+                (0..current_rotation).fold(perspective, |cords, _| rotate(cords));
+
+            let obvious_next_position = (
+                position.0 + rotated_perspective.0,
+                position.1 + rotated_perspective.1,
+            );
+
+            let (_, current_map_data) = current_map;
+
+            if let Some(tile) = current_map_data
+                .locations
+                .get(obvious_next_position.1 as usize)
+                .map(|r| r.get(obvious_next_position.0 as usize))
+                .flatten()
+            {
+                match tile {
+                    Tile::Movable => position = obvious_next_position,
+                    Tile::Wall => break,
+                }
+            } else {
+                let board_max_size = current_map_data.locations.len() as i32 - 1;
+
+                let ((index, rotation), destination) = if rotated_perspective == perspective_up {
+                    (
+                        current_map_data.top.clone(),
+                        (position.0, board_max_size), /*bottom */
+                    )
+                } else if rotated_perspective == perspective_right {
+                    (
+                        current_map_data.right.clone(),
+                        (0, position.1), /*left */
+                    )
+                } else if rotated_perspective == perspective_left {
+                    (
+                        current_map_data.left.clone(),
+                        (board_max_size, position.1), /*bottom */
+                    )
+                } else if rotated_perspective == perspective_down {
+                    (current_map_data.bottom, (position.0, 0) /*top */)
+                } else {
+                    panic!()
+                };
+
+                let next_map = &cube_map[index];
+                let position_at_next_side =
+                    (0..rotation).fold(destination, |(x, y), _| (board_max_size - y, x));
+
+                match next_map.1.locations[position_at_next_side.1 as usize]
+                    [position_at_next_side.0 as usize]
+                {
+                    Tile::Movable => {
+                        current_rotation = (current_rotation + rotation) % 4;
+                        current_map = next_map;
+                        position = position_at_next_side
+                    }
+                    Tile::Wall => break,
+                }
+            }
+        }
+
+        if let Some(rotation) = chars.next() {
+            println!("ROTATION: {rotation}");
+
+            perspective = match rotation {
+                'L' => rotate(rotate(rotate(perspective))),
+                'R' => rotate(perspective),
+                _ => panic!(),
+            }
+        }
+    }
+
+    let (x, y) = current_map.0;
+
+    println!(" DEBUG: pos:{position:?}, map_pos: {x},{y}, perspective: {perspective:?}",);
+
+    1000 * (position.1 + 1 + (x * current_map.1.locations.len()) as i32)
+        + 4 * (position.0 + 1 + (y * current_map.1.locations.len()) as i32)
+        + if perspective == perspective_up {
+            3
+        } else if perspective == perspective_right {
+            0
+        } else if perspective == perspective_down {
+            1
+        } else {
+            2
+        }
 }
 
 #[cfg(test)]
@@ -157,26 +285,6 @@ mod tests {
     fn should_compute_solution() {
         assert_eq!(answer(), 0);
     }
-    // 1: missing
-    //  - left (2 90deg) done
-    //  - right (4 270deg) done
-    //  - top (180deg) done
-    // 2: missing
-    //  - top (1 270deg) done
-    //  - left (6 180deg) done
-    //  - bottom (5 90deg) done
-    // 3 is fine
-    // 4: missing
-    //  - top (1 90deg)
-    //  - bottom (5 270deg) ()
-    //  - right (6 180deg)
-    // 5: missing
-    //  - left (2 270deg)
-    //  - right (4 90deg)
-    // 6: missing
-    //  - left (2 180deg) (-1, -2)
-    //  - right (3 180deg) (1, -2)
-    //  - bottom (1 0deg) (0, -3)
 
     // note: order of check does matter: there can be immidiete bottom and bottom-right - both are valid bottom (bottom-right will be bottom if immidiete bottom is not present)
 
@@ -200,82 +308,6 @@ mod tests {
     ....
     ";
 
-        assert_eq!(
-            parse_cube_map(input),
-            vec![
-                Face {
-                    locations: vec![
-                        vec![Tile::Wall, Tile::Movable, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable]
-                    ],
-                    top: (5, Rotation(2)),
-                    bottom: (2, Rotation(0)),
-                    left: (1, Rotation(1)),
-                    right: (3, Rotation(3))
-                },
-                Face {
-                    locations: vec![
-                        vec![Tile::Wall, Tile::Wall, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable]
-                    ],
-                    top: (0, Rotation(3)),
-                    bottom: (4, Rotation(1)),
-                    left: (5, Rotation(2)),
-                    right: (2, Rotation(0))
-                },
-                Face {
-                    locations: vec![
-                        vec![Tile::Wall, Tile::Wall, Tile::Wall, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable]
-                    ],
-                    top: (0, Rotation(0)),
-                    bottom: (4, Rotation(0)),
-                    left: (1, Rotation(0)),
-                    right: (3, Rotation(0))
-                },
-                Face {
-                    locations: vec![
-                        vec![Tile::Wall, Tile::Wall, Tile::Wall, Tile::Wall],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable]
-                    ],
-                    top: (0, Rotation(1)),
-                    bottom: (4, Rotation(3)),
-                    left: (2, Rotation(0)),
-                    right: (5, Rotation(2))
-                },
-                Face {
-                    locations: vec![
-                        vec![Tile::Wall, Tile::Wall, Tile::Wall, Tile::Wall],
-                        vec![Tile::Wall, Tile::Movable, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable]
-                    ],
-                    top: (2, Rotation(0)),
-                    bottom: (5, Rotation(0)),
-                    left: (1, Rotation(3)),
-                    right: (3, Rotation(1))
-                },
-                Face {
-                    locations: vec![
-                        vec![Tile::Wall, Tile::Wall, Tile::Wall, Tile::Wall],
-                        vec![Tile::Wall, Tile::Wall, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable],
-                        vec![Tile::Movable, Tile::Movable, Tile::Movable, Tile::Movable]
-                    ],
-                    top: (4, Rotation(0)),
-                    bottom: (0, Rotation(0)),
-                    left: (3, Rotation(2)),
-                    right: (3, Rotation(2))
-                }
-            ]
-        )
+        assert_eq!(parse_cube_map(input), vec![])
     }
 }
