@@ -161,10 +161,9 @@ pub fn answer() -> i32 {
     let perspective_down = (0, 1);
     let perspective_left = (-1, 0);
 
-    let mut perspective: (i32, i32) = perspective_right;
     let mut position = (0, 0);
     let mut current_map = &cube_map[0];
-    let mut current_rotation = 0;
+    let mut rotated_perspective = perspective_right;
 
     let mut chars = operations_raw.chars();
 
@@ -173,23 +172,7 @@ pub fn answer() -> i32 {
         .collect::<String>()
         .parse::<u64>()
     {
-        println!(
-            "Loop {n} {}",
-            if perspective == perspective_up {
-                "up"
-            } else if perspective == perspective_right {
-                "right"
-            } else if perspective == perspective_down {
-                "down"
-            } else {
-                "left"
-            }
-        );
-        // add position go times (check for colision)
         for _ in 0..n {
-            let rotated_perspective =
-                (0..current_rotation).fold(perspective, |cords, _| rotate(cords));
-
             let obvious_next_position = (
                 position.0 + rotated_perspective.0,
                 position.1 + rotated_perspective.1,
@@ -223,7 +206,7 @@ pub fn answer() -> i32 {
                 } else if rotated_perspective == perspective_left {
                     (
                         current_map_data.left.clone(),
-                        (board_max_size, position.1), /*bottom */
+                        (board_max_size, position.1), /*right */
                     )
                 } else if rotated_perspective == perspective_down {
                     (current_map_data.bottom, (position.0, 0) /*top */)
@@ -239,7 +222,8 @@ pub fn answer() -> i32 {
                     [position_at_next_side.0 as usize]
                 {
                     Tile::Movable => {
-                        current_rotation = (current_rotation + rotation) % 4;
+                        rotated_perspective =
+                            (0..rotation).fold(rotated_perspective, |cords, _| rotate(cords));
                         current_map = next_map;
                         position = position_at_next_side
                     }
@@ -249,11 +233,9 @@ pub fn answer() -> i32 {
         }
 
         if let Some(rotation) = chars.next() {
-            println!("ROTATION: {rotation}");
-
-            perspective = match rotation {
-                'L' => rotate(rotate(rotate(perspective))),
-                'R' => rotate(perspective),
+            rotated_perspective = match rotation {
+                'L' => rotate(rotate(rotate(rotated_perspective))),
+                'R' => rotate(rotated_perspective),
                 _ => panic!(),
             }
         }
@@ -261,15 +243,13 @@ pub fn answer() -> i32 {
 
     let (x, y) = current_map.0;
 
-    println!(" DEBUG: pos:{position:?}, map_pos: {x},{y}, perspective: {perspective:?}",);
-
     1000 * (position.1 + 1 + (x * current_map.1.locations.len()) as i32)
         + 4 * (position.0 + 1 + (y * current_map.1.locations.len()) as i32)
-        + if perspective == perspective_up {
+        + if rotated_perspective == perspective_up {
             3
-        } else if perspective == perspective_right {
+        } else if rotated_perspective == perspective_right {
             0
-        } else if perspective == perspective_down {
+        } else if rotated_perspective == perspective_down {
             1
         } else {
             2
@@ -285,8 +265,6 @@ mod tests {
     fn should_compute_solution() {
         assert_eq!(answer(), 0);
     }
-
-    // note: order of check does matter: there can be immidiete bottom and bottom-right - both are valid bottom (bottom-right will be bottom if immidiete bottom is not present)
 
     #[test]
     fn should_parse_simple_cross_cube() {
