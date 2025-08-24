@@ -78,53 +78,64 @@ fn parse_cube_map(map_raw: &str) -> Vec<((usize, usize), Face)> {
                         (*item_col as i32, *item_row as i32)
                             == (*col as i32 + col_relative, *row as i32 + row_relative)
                     })
+                    .map(|n| {
+                        (
+                            n,
+                            /*rotation: */
+                            ((col_relative.abs() + row_relative.abs() - 1) % 4) as usize,
+                        )
+                    })
             };
 
             let top = [
-                check_for_face(0, -1).map(|n| (n, 0)),
-                check_for_face(1, -1).map(|n| (n, 1)), // prev 3
-                check_for_face(-1, -1).map(|n| (n, 1)),
-                check_for_face(0, 3).map(|n| (n, 2)),
-                check_for_face(-2, 1).map(|n| (n, 2)),
-                check_for_face(-1, 3).map(|n| (n, 1)),
-                check_for_face(-2, 3).map(|n| (n, 2)),
-                check_for_face(2, -1).map(|n| (n, 2)),
+                check_for_face(0, -1),
+                check_for_face(1, -1),
+                check_for_face(-1, 3),
+                check_for_face(-2, 3),
+                //
+                check_for_face(-2, 1),
+                check_for_face(2, -1),
+                check_for_face(-1, -1),
             ]
             .into_iter()
             .find_map(|e| e)
             .unwrap();
             let bottom = [
-                check_for_face(0, 1).map(|n| (n, 0)),
-                check_for_face(1, 1).map(|n| (n, 1)),
-                check_for_face(-1, 1).map(|n| (n, 3)),
-                check_for_face(0, -3).map(|n| (n, 0)),
-                check_for_face(2, 1).map(|n| (n, 2)),
-                check_for_face(2, -3).map(|n| (n, 2)),
-                check_for_face(-2, -1).map(|n| (n, 2)),
+                check_for_face(0, 1),
+                check_for_face(-1, 1),
+                check_for_face(-1, 1),
+                check_for_face(2, -3),
+                //
+                check_for_face(2, 1),
+                check_for_face(1, 1),
+                check_for_face(-2, -1),
+                check_for_face(-3, -1),
             ]
             .into_iter()
             .find_map(|e| e)
             .unwrap();
             let left = [
-                check_for_face(-1, 0).map(|n| (n, 0)),
-                check_for_face(-1, 1).map(|n| (n, 1)),
-                check_for_face(-1, -1).map(|n| (n, 3)),
-                check_for_face(1, 2).map(|n| (n, 2)),
-                check_for_face(1, -2).map(|n| (n, 2)),
-                check_for_face(-1, 2).map(|n| (n, 2)),
-                check_for_face(3, 1).map(|n| (n, 3)),
+                check_for_face(-1, 0),
+                check_for_face(-1, 1),
+                check_for_face(-1, 2),
+                check_for_face(1, -3),
+                check_for_face(1, -2),
+                //
+                check_for_face(3, 1),
+                check_for_face(-1, -1),
             ]
             .into_iter()
             .find_map(|e| e)
             .unwrap();
             let right = [
-                check_for_face(1, 0).map(|n| (n, 0)),
-                check_for_face(1, 1).map(|n| (n, 1)), // prev 3
-                check_for_face(1, -1).map(|n| (n, 1)),
-                check_for_face(-1, 2).map(|n| (n, 2)),
-                check_for_face(1, -2).map(|n| (n, 2)),
-                check_for_face(1, 2).map(|n| (n, 2)),
-                check_for_face(-1, -2).map(|n| (n, 2)),
+                check_for_face(1, 0),
+                check_for_face(1, -1),
+                check_for_face(1, -2),
+                check_for_face(-1, 2),
+                //
+                check_for_face(1, 2),
+                check_for_face(1, 1),
+                check_for_face(-1, -2),
             ]
             .into_iter()
             .find_map(|e| e)
