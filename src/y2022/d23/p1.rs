@@ -1,8 +1,10 @@
 use std::collections::HashSet;
 
+use itertools::Itertools;
+
 use crate::utils::read_lines;
 
-pub fn answer() -> i64 {
+pub fn answer() -> i32 {
     let mut elves = HashSet::new();
 
     let map = read_lines("src/y2022/d23/input").collect::<Vec<_>>();
@@ -24,7 +26,7 @@ pub fn answer() -> i64 {
 
     let dirs = [n, s, w, e];
 
-    for _ in 0..10 {
+    for i in 0..10 {
         let proposed_moves = elves
             .iter()
             .filter(|elf| {
@@ -32,22 +34,45 @@ pub fn answer() -> i64 {
                     .flatten()
                     .any(|(x, y)| elves.contains(&(elf.0 + x, elf.1 + y)))
             })
-            .map(|elf| {
-                dirs.iter()
+            .filter_map(|elf| {
+                (0..dirs.len())
+                    .map(|index| dirs[(index + i) % dirs.len()])
                     .find(|d| {
                         !d.iter()
                             .any(|(x, y)| elves.contains(&(elf.0 + x, elf.1 + y)))
                     })
-                    .unwrap()[0]
+                    .map(|dir| (*elf, (dir[0].0 + elf.0, dir[0].1 + elf.1)))
             })
             .collect::<Vec<_>>();
 
-        // filter duplicates
+        let unique_proposed_moves = proposed_moves.iter().filter(|(_, p_outer)| {
+            proposed_moves
+                .iter()
+                .filter(|(_, p_inner)| p_outer == p_inner)
+                .count()
+                == 1
+        });
 
-        // mutate directions
+        for (elf, elf_next) in unique_proposed_moves {
+            elves.remove(elf);
+            elves.insert(*elf_next);
+        }
     }
 
-    0
+    let (min_x, max_x) = elves
+        .iter()
+        .map(|(x, _)| *x)
+        .minmax()
+        .into_option()
+        .unwrap();
+    let (min_y, max_y) = elves
+        .iter()
+        .map(|(_, y)| *y)
+        .minmax()
+        .into_option()
+        .unwrap();
+
+    (max_x + 1 - min_x) * (max_y + 1 - min_y) - elves.len() as i32
 }
 
 #[cfg(test)]
@@ -57,6 +82,6 @@ mod tests {
 
     #[test]
     fn should_compute_solution() {
-        assert_eq!(answer(), 0);
+        assert_eq!(answer(), 4005);
     }
 }
