@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use itertools::Itertools;
+
 use crate::utils::read_lines;
 
 pub fn answer() -> i64 {
@@ -13,28 +15,30 @@ pub fn answer() -> i64 {
 
     let mut max_x = 0;
     let mut max_y = 0;
-    let mut top_storms = HashSet::new();
-    let mut down_storms = HashSet::new();
-    let mut left_storms = HashSet::new();
-    let mut right_storms = HashSet::new();
+    let mut up_storms = vec![];
+    let mut down_storms = vec![];
+    let mut left_storms = vec![];
+    let mut right_storms = vec![];
 
     for (y, row) in read_lines("src/y2022/d24/input").enumerate() {
-        max_x = row.len();
-        max_y = y;
+        max_x = row.len() as i32;
+        max_y = y as i32;
 
         for (x, tile) in row.chars().enumerate() {
+            let cords = (x as i32, y as i32);
+
             match tile {
                 '>' => {
-                    right_storms.insert((x, y));
+                    right_storms.push(cords);
                 }
                 '<' => {
-                    left_storms.insert((x, y));
+                    left_storms.push(cords);
                 }
                 'v' => {
-                    down_storms.insert((x, y));
+                    down_storms.push(cords);
                 }
                 '^' => {
-                    top_storms.insert((x, y));
+                    up_storms.push(cords);
                 }
                 _ => {}
             }
@@ -44,18 +48,90 @@ pub fn answer() -> i64 {
     // Step 2 initialize start location
 
     let start = (1, 0);
-    let end = (max_x - 1, max_y);
+    let end = (max_x as i32 - 1, max_y as i32);
 
     let right_direction = (1, 0);
     let left_direction = (-1, 0);
-    let up_direction = (0, 1);
-    let right_direction = (0, -1);
+    let up_direction = (0, -1);
+    let down_direction = (0, 1);
+    let wait_direction = (0, 0);
+
+    let actions = [
+        wait_direction,
+        right_direction,
+        down_direction,
+        up_direction,
+        left_direction,
+    ];
 
     // Step 3 simulate map, turns and generate graph (prioritize those branches that are making most progress)
+    let mut i = 0;
+    let mut valid_paths = HashSet::with_capacity(2_usize.pow(10));
+    valid_paths.insert(start);
+
+    loop {
+        let (new_up_storms, down_storms_to_move): (Vec<_>, Vec<_>) = up_storms
+            .iter()
+            .map(|pos| (pos.0 + up_direction.0, pos.1 + up_direction.1))
+            .map(|pos| if pos.1 == 0 { Err(pos) } else { Ok(pos) })
+            .partition_result();
+
+        let (new_down_storms, up_storms_to_move): (Vec<_>, Vec<_>) = down_storms
+            .iter()
+            .map(|pos| (pos.0 + down_direction.0, pos.1 + down_direction.1))
+            .map(|pos| if pos.1 == max_y { Err(pos) } else { Ok(pos) })
+            .partition_result();
+
+        let (new_left_storms, right_storms_to_move): (Vec<_>, Vec<_>) = left_storms
+            .iter()
+            .map(|pos| (pos.0 + left_direction.0, pos.1 + left_direction.1))
+            .map(|pos| if pos.0 == 0 { Err(pos) } else { Ok(pos) })
+            .partition_result();
+
+        let (new_right_storms, left_storms_to_move): (Vec<_>, Vec<_>) = right_storms
+            .iter()
+            .map(|pos| (pos.0 + right_direction.0, pos.1 + right_direction.1))
+            .map(|pos| if pos.0 == max_x { Err(pos) } else { Ok(pos) })
+            .partition_result();
+
+        up_storms = new_up_storms;
+        up_storms.extend(up_storms_to_move);
+
+        down_storms = new_down_storms;
+        down_storms.extend(down_storms_to_move);
+
+        left_storms = new_left_storms;
+        left_storms.extend(left_storms_to_move);
+
+        right_storms = new_right_storms;
+        right_storms.extend(right_storms_to_move);
+
+        valid_paths = valid_paths
+            .iter()
+            .map(|(curr_x, curr_y)| actions.iter().map(move |(x, y)| (x + curr_x, y + curr_y)))
+            .flatten()
+            .filter(|cords| {
+                !(up_storms.contains(cords)
+                    || down_storms.contains(cords)
+                    || right_storms.contains(cords)
+                    || left_storms.contains(cords))
+            })
+            .filter(|pos| {
+                (start == *pos || end == *pos)
+                    || !(pos.1 == 0 || pos.0 == 0 || pos.1 == max_y || pos.0 == max_x)
+            })
+            .collect();
+
+        valid_paths.remove(&start);
+
+        if valid_paths.contains(&end) {
+            return i + 1;
+        }
+
+        i += 1;
+    }
 
     // Step 4 return shortest path length
-
-    0
 }
 
 #[cfg(test)]
