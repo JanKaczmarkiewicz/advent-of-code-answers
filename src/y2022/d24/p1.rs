@@ -21,7 +21,7 @@ pub fn answer() -> i64 {
     let mut right_storms = vec![];
 
     for (y, row) in read_lines("src/y2022/d24/input").enumerate() {
-        max_x = row.len() as i32;
+        max_x = row.len() as i32 - 1;
         max_y = y as i32;
 
         for (x, tile) in row.chars().enumerate() {
@@ -57,74 +57,114 @@ pub fn answer() -> i64 {
     let wait_direction = (0, 0);
 
     let actions = [
-        wait_direction,
-        right_direction,
-        down_direction,
-        up_direction,
-        left_direction,
+        (' ', wait_direction),
+        ('>', right_direction),
+        ('v', down_direction),
+        ('^', up_direction),
+        ('<', left_direction),
     ];
 
     // Step 3 simulate map, turns and generate graph (prioritize those branches that are making most progress)
     let mut i = 0;
     let mut valid_paths = HashSet::with_capacity(2_usize.pow(10));
-    valid_paths.insert(start);
+    valid_paths.insert(("".to_string(), start));
 
     loop {
-        let (new_up_storms, down_storms_to_move): (Vec<_>, Vec<_>) = up_storms
-            .iter()
-            .map(|pos| (pos.0 + up_direction.0, pos.1 + up_direction.1))
-            .map(|pos| if pos.1 == 0 { Err(pos) } else { Ok(pos) })
-            .partition_result();
+        println!("{}", i);
+        for y in 0..=max_y {
+            for x in 0..=max_x {
+                if (x, y) == start {
+                    print!(".")
+                } else if (x, y) == end {
+                    print!(".")
+                } else if x == 0 || y == 0 || x == max_x || y == max_y {
+                    print!("#")
+                } else {
+                    let map = [
+                        (&up_storms, "^"),
+                        (&down_storms, "v"),
+                        (&left_storms, "<"),
+                        (&right_storms, ">"),
+                    ];
 
-        let (new_down_storms, up_storms_to_move): (Vec<_>, Vec<_>) = down_storms
-            .iter()
-            .map(|pos| (pos.0 + down_direction.0, pos.1 + down_direction.1))
-            .map(|pos| if pos.1 == max_y { Err(pos) } else { Ok(pos) })
-            .partition_result();
+                    let matches = map
+                        .iter()
+                        .filter(|(storms, _)| storms.contains(&(x, y)))
+                        .collect::<Vec<_>>();
 
-        let (new_left_storms, right_storms_to_move): (Vec<_>, Vec<_>) = left_storms
-            .iter()
-            .map(|pos| (pos.0 + left_direction.0, pos.1 + left_direction.1))
-            .map(|pos| if pos.0 == 0 { Err(pos) } else { Ok(pos) })
-            .partition_result();
+                    if matches.len() == 0 {
+                        print!(".");
+                    } else if matches.len() == 1 {
+                        print!("{}", matches[0].1)
+                    } else {
+                        print!("{}", matches.len())
+                    }
+                }
+            }
+            println!();
+        }
+        println!();
 
-        let (new_right_storms, left_storms_to_move): (Vec<_>, Vec<_>) = right_storms
-            .iter()
-            .map(|pos| (pos.0 + right_direction.0, pos.1 + right_direction.1))
-            .map(|pos| if pos.0 == max_x { Err(pos) } else { Ok(pos) })
-            .partition_result();
+        for pos in up_storms.iter_mut() {
+            let new_pos = (pos.0 + up_direction.0, pos.1 + up_direction.1);
+            *pos = if new_pos.1 == 0 {
+                (new_pos.0, max_y - 1)
+            } else {
+                new_pos
+            }
+        }
 
-        up_storms = new_up_storms;
-        up_storms.extend(up_storms_to_move);
+        for pos in down_storms.iter_mut() {
+            let new_pos = (pos.0 + down_direction.0, pos.1 + down_direction.1);
+            *pos = if new_pos.1 == max_y {
+                (new_pos.0, 1)
+            } else {
+                new_pos
+            }
+        }
 
-        down_storms = new_down_storms;
-        down_storms.extend(down_storms_to_move);
+        for pos in left_storms.iter_mut() {
+            let new_pos = (pos.0 + left_direction.0, pos.1 + left_direction.1);
+            *pos = if new_pos.0 == 0 {
+                (max_x - 1, new_pos.1)
+            } else {
+                new_pos
+            }
+        }
 
-        left_storms = new_left_storms;
-        left_storms.extend(left_storms_to_move);
-
-        right_storms = new_right_storms;
-        right_storms.extend(right_storms_to_move);
+        for pos in right_storms.iter_mut() {
+            let new_pos = (pos.0 + right_direction.0, pos.1 + right_direction.1);
+            *pos = if new_pos.0 == max_x {
+                (1, new_pos.1)
+            } else {
+                new_pos
+            }
+        }
 
         valid_paths = valid_paths
             .iter()
-            .map(|(curr_x, curr_y)| actions.iter().map(move |(x, y)| (x + curr_x, y + curr_y)))
+            .map(|(path, (curr_x, curr_y))| {
+                actions.iter().map(move |(action, (x, y))| {
+                    let mut new_path = path.clone();
+                    new_path.push(*action);
+                    (new_path, (x + curr_x, y + curr_y))
+                })
+            })
             .flatten()
-            .filter(|cords| {
+            .filter(|(_, cords)| {
                 !(up_storms.contains(cords)
                     || down_storms.contains(cords)
                     || right_storms.contains(cords)
                     || left_storms.contains(cords))
             })
-            .filter(|pos| {
-                (start == *pos || end == *pos)
-                    || !(pos.1 == 0 || pos.0 == 0 || pos.1 == max_y || pos.0 == max_x)
+            .filter(|(_, pos)| {
+                (end == *pos || start == *pos)
+                    || !(pos.1 <= 0 || pos.0 <= 0 || pos.1 >= max_y || pos.0 >= max_x)
             })
             .collect();
 
-        valid_paths.remove(&start);
-
-        if valid_paths.contains(&end) {
+        if let Some((path, _)) = valid_paths.iter().find(|(_, pos)| *pos == end) {
+            println!("{path}");
             return i + 1;
         }
 
