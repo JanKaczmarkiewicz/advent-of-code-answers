@@ -1,7 +1,5 @@
 use std::collections::HashSet;
 
-use itertools::Itertools;
-
 use crate::utils::read_lines;
 
 pub fn answer() -> i64 {
@@ -57,54 +55,19 @@ pub fn answer() -> i64 {
     let wait_direction = (0, 0);
 
     let actions = [
-        (' ', wait_direction),
-        ('>', right_direction),
-        ('v', down_direction),
-        ('^', up_direction),
-        ('<', left_direction),
+        (wait_direction),
+        (right_direction),
+        (down_direction),
+        (up_direction),
+        (left_direction),
     ];
 
     // Step 3 simulate map, turns and generate graph (prioritize those branches that are making most progress)
     let mut i = 0;
     let mut valid_paths = HashSet::with_capacity(2_usize.pow(10));
-    valid_paths.insert(("".to_string(), start));
+    valid_paths.insert(start);
 
     loop {
-        println!("{}", i);
-        for y in 0..=max_y {
-            for x in 0..=max_x {
-                if (x, y) == start {
-                    print!(".")
-                } else if (x, y) == end {
-                    print!(".")
-                } else if x == 0 || y == 0 || x == max_x || y == max_y {
-                    print!("#")
-                } else {
-                    let map = [
-                        (&up_storms, "^"),
-                        (&down_storms, "v"),
-                        (&left_storms, "<"),
-                        (&right_storms, ">"),
-                    ];
-
-                    let matches = map
-                        .iter()
-                        .filter(|(storms, _)| storms.contains(&(x, y)))
-                        .collect::<Vec<_>>();
-
-                    if matches.len() == 0 {
-                        print!(".");
-                    } else if matches.len() == 1 {
-                        print!("{}", matches[0].1)
-                    } else {
-                        print!("{}", matches.len())
-                    }
-                }
-            }
-            println!();
-        }
-        println!();
-
         for pos in up_storms.iter_mut() {
             let new_pos = (pos.0 + up_direction.0, pos.1 + up_direction.1);
             *pos = if new_pos.1 == 0 {
@@ -143,28 +106,24 @@ pub fn answer() -> i64 {
 
         valid_paths = valid_paths
             .iter()
-            .map(|(path, (curr_x, curr_y))| {
-                actions.iter().map(move |(action, (x, y))| {
-                    let mut new_path = path.clone();
-                    new_path.push(*action);
-                    (new_path, (x + curr_x, y + curr_y))
-                })
-            })
+            .map(|(curr_x, curr_y)| actions.iter().map(move |(x, y)| ((x + curr_x, y + curr_y))))
             .flatten()
-            .filter(|(_, cords)| {
+            .filter(|cords| {
                 !(up_storms.contains(cords)
                     || down_storms.contains(cords)
                     || right_storms.contains(cords)
                     || left_storms.contains(cords))
             })
-            .filter(|(_, pos)| {
+            .filter(|pos| {
                 (end == *pos || start == *pos)
                     || !(pos.1 <= 0 || pos.0 <= 0 || pos.1 >= max_y || pos.0 >= max_x)
             })
             .collect();
 
-        if let Some((path, _)) = valid_paths.iter().find(|(_, pos)| *pos == end) {
-            println!("{path}");
+        println!("{}", valid_paths.len());
+
+        if let Some((_path, _)) = valid_paths.get(&end) {
+            // println!("{path}");
             return i + 1;
         }
 
@@ -181,6 +140,6 @@ mod tests {
 
     #[test]
     fn should_compute_solution() {
-        assert_eq!(answer(), 0);
+        assert_eq!(answer(), 221);
     }
 }
