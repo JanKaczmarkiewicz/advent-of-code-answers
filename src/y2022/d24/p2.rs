@@ -1,9 +1,7 @@
-use crate::utils::read_lines;
+use crate::y2022::d24::shared::{self, Destination};
 
 pub fn answer() -> i64 {
-    read_lines("src/y2022/d24/input");
-
-    0
+    shared::answer(&[Destination::End, Destination::Start, Destination::End])
 }
 
 #[cfg(test)]
@@ -13,6 +11,9 @@ mod tests {
 
     #[test]
     fn should_compute_solution() {
-        assert_eq!(answer(), 0);
+        assert_eq!(
+            shared::answer(&[Destination::End, Destination::Start, Destination::End]),
+            0
+        );
     }
 }

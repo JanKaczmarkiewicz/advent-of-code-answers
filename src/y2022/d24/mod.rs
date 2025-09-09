@@ -1,5 +1,6 @@
 pub mod p1;
 pub mod p2;
+pub mod shared;
 
 pub fn answer() -> () {
     println!("Answer to day24 p1: {}, p2: {}", p1::answer(), p2::answer());
