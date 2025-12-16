@@ -19,6 +19,7 @@ mod a7;
 mod a8;
 mod a9;
 mod y2022;
+mod y2023;
 
 fn main() {
     a1::answer();
@@ -66,4 +67,6 @@ fn main() {
     y2022::d23::answer();
     y2022::d24::answer();
     y2022::d25::answer();
+
+    y2023::d12::answer();
 }
