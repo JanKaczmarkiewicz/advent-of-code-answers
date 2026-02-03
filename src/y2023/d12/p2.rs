@@ -1,3 +1,5 @@
+use std::iter;
+
 use itertools::Itertools;
 
 use crate::utils::read_lines;
@@ -32,12 +34,7 @@ fn are_vecs_equal<T: PartialEq<T>>(l: &Vec<T>, r: &Vec<T>) -> bool {
 
 pub fn answer() -> usize {
     read_lines("src/y2023/d12/input")
-        .enumerate()
-        .map(|(i, line)| {
-            if (i % 10 == 0) {
-                println!("{i}")
-            }
-
+        .map(|line| {
             let (row_map, contiguous_groups_raw) = line.split_once(" ").unwrap();
 
             let row_map = (0..5).map(|_| row_map).join(",");
@@ -50,12 +47,19 @@ pub fn answer() -> usize {
 
             let mut possibilities = vec!["".to_string()];
 
+            // idea: make this recursive instead of keeping possibilities
+
             for c in row_map.chars() {
                 if c == '?' {
                     possibilities = possibilities
                         .iter()
                         .flat_map(|el| {
-                            [format!("{}.", el.clone()), format!("{}#", el.clone())].into_iter()
+                            let mut v1 = el.clone();
+                            v1.push('.');
+                            let mut v2 = el.clone();
+                            v2.push('#');
+
+                            iter::once(v1).chain(iter::once(v2))
                         })
                         .collect()
                 } else {
@@ -64,19 +68,17 @@ pub fn answer() -> usize {
                     });
                 }
 
+                //  idea: look at the number of groups
                 possibilities.retain(|el| {
                     let el_groups = extract_groups(el);
 
                     if el.len() == row_map.len() {
                         are_vecs_equal(&el_groups, &contiguous_groups)
                     } else {
-                        if el_groups.len() == 0 {
-                            return true;
-                        } else {
-                            el_groups.len() <= contiguous_groups.len()
+                        el_groups.len() == 0
+                            || (el_groups.len() <= contiguous_groups.len()
                                 && el_groups[el_groups.len() - 1]
-                                    <= contiguous_groups[el_groups.len() - 1]
-                        }
+                                    <= contiguous_groups[el_groups.len() - 1])
                     }
                 })
             }
@@ -94,5 +96,10 @@ mod tests {
     #[test]
     fn should_compute_solution() {
         assert_eq!(answer(), 7163);
+    }
+
+    #[test]
+    fn should_compute_solution_dev() {
+        assert_eq!(answer(), 0);
     }
 }
