@@ -1,5 +1,3 @@
-use std::iter;
-
 use itertools::Itertools;
 
 use crate::utils::read_lines;
@@ -47,42 +45,84 @@ pub fn answer() -> usize {
 
             let mut possibilities = vec!["".to_string()];
 
-            // idea: make this recursive instead of keeping possibilities
+            let is_possible_row = |el: &String| {
+                if el.len() == row_map.len() {
+                    are_vecs_equal(&extract_groups(el), &contiguous_groups)
+                } else {
+                    let mut counter = 0;
+                    let mut last = 0;
+                    let mut nr_of_groups = 0;
+
+                    for ch in el.chars() {
+                        if ch == '.' {
+                            if counter > 0 {
+                                last = counter;
+                                nr_of_groups += 1;
+                                counter = 0;
+                            }
+                        } else {
+                            /* # */
+                            counter += 1;
+                        }
+                    }
+
+                    if counter > 0 {
+                        last = counter;
+                        nr_of_groups += 1;
+                    };
+
+                    nr_of_groups == 0
+                        || (nr_of_groups <= contiguous_groups.len()
+                            && last <= contiguous_groups[nr_of_groups - 1])
+                            && (contiguous_groups[nr_of_groups..].into_iter().sum::<u16>() as usize)
+                                < (row_map.len() - el.len())
+                }
+            };
+
+            // let mut result = 0;
+            // // idea: make this recursive instead of keeping possibilities. Why this will help?
+            // for c in row_map.chars() {}
+
+            // The information that the row pattern is repeated 5 times can be utilized. I can compute all basic combination that will pass check and then mix and match slices of those.
+            // eg ##???#??#?????????#? 11,6
+            // say from p1 pow there are 3 possible configurations. This means that in part two there will be at least 3^5 possible final configurations.
+            // Not true, since the first pattern can finish with # at the end this will affect the second part of the row, there are not isolated.
+            // eg ##########....###### -> ##########....################....######
+            // this not only affect 2nd row but also the first: now this is possible:
+            // eg                         ##########.......######.################ end continues da da da
+            // so I have to include configurations that does finish with # just in case
+            // ???????#?? 1,1,2 This illustrates problem well. .......#.. #.##.#.#.# #(etc). This repetition allowes extra patterns in the first part (dependent on the second)
+
+            // so maybe entirely different approach first find place for the biggest group
+            // ##???#??#?????????#? 11,6
+            // has to be at the start
+            // [###########???????#? 11,6]
+            // Then second
+            // [###########???????#? 11,6]
+
+            // DaC recursive approach
 
             for c in row_map.chars() {
                 if c == '?' {
-                    possibilities = possibilities
-                        .iter()
-                        .flat_map(|el| {
-                            let mut v1 = el.clone();
-                            v1.push('.');
-                            let mut v2 = el.clone();
-                            v2.push('#');
-
-                            iter::once(v1).chain(iter::once(v2))
-                        })
-                        .collect()
+                    for i in 0..possibilities.len() {
+                        let mut cp = possibilities[i].clone();
+                        cp.push('.');
+                        possibilities.push(cp);
+                        possibilities[i].push('#');
+                    }
                 } else {
                     possibilities.iter_mut().for_each(|el| {
                         el.push(c);
                     });
                 }
 
-                //  idea: look at the number of groups
-                possibilities.retain(|el| {
-                    let el_groups = extract_groups(el);
+                println!("{}", possibilities.len());
 
-                    if el.len() == row_map.len() {
-                        are_vecs_equal(&el_groups, &contiguous_groups)
-                    } else {
-                        el_groups.len() == 0
-                            || (el_groups.len() <= contiguous_groups.len()
-                                && el_groups[el_groups.len() - 1]
-                                    <= contiguous_groups[el_groups.len() - 1])
-                    }
-                })
+                //  idea: look at the number of groups
+                possibilities.retain(is_possible_row)
             }
 
+            println!("res: {}", possibilities.len());
             possibilities.len()
         })
         .sum()
