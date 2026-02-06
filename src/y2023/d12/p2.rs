@@ -73,11 +73,11 @@ impl<'a> CachedCount<'a> {
 }
 
 pub fn answer() -> usize {
-    read_lines("src/y2023/d12/input_example")
+    read_lines("src/y2023/d12/input")
         .map(|line| {
             let (row_map, contiguous_groups_raw) = line.split_once(" ").unwrap();
 
-            let row_map = (0..5).map(|_| row_map).join(",");
+            let row_map = (0..5).map(|_| row_map).join("?");
             let contiguous_groups_raw = (0..5).map(|_| contiguous_groups_raw).join(",");
 
             let contiguous_groups = contiguous_groups_raw
@@ -105,7 +105,7 @@ mod tests {
 
     #[test]
     fn should_compute_solution() {
-        assert_eq!(answer(), 7163);
+        assert_eq!(answer(), 51456609952403);
     }
 
     #[test]
