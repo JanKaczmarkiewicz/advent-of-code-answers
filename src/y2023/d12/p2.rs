@@ -1,37 +1,79 @@
+use std::{collections::HashMap, ops::RangeFrom};
+
 use itertools::Itertools;
 
 use crate::utils::read_lines;
 
-fn extract_groups(row: &str) -> Vec<u16> {
-    let mut counter = 0;
+fn substr(s: &str, r: RangeFrom<usize>) -> &str {
+    if r.start >= s.len() {
+        return "";
+    } else {
+        &s[r]
+    }
+}
 
-    let mut row_groups = vec![];
+struct CachedCount<'a> {
+    cache: HashMap<(Option<char>, &'a str, &'a [usize]), usize>,
+}
 
-    for ch in row.chars() {
-        if ch == '.' {
-            if counter > 0 {
-                row_groups.push(counter);
-                counter = 0;
+impl<'a> CachedCount<'a> {
+    fn count(&mut self, curr: Option<char>, row: &'a str, cfg: &'a [usize]) -> usize {
+        // println!("{} {row} {cfg:?}", curr.unwrap_or(' '));
+        if let Some(c) = curr {
+            if c == '.' {
+                if row.len() == 0 {
+                    self.cached_count(None, "", cfg)
+                } else {
+                    self.cached_count(row.chars().nth(0), &row[1..], cfg)
+                }
+            } else if c == '#' {
+                if cfg.len() == 0 {
+                    0
+                } else if row.len() < cfg[0] - 1 {
+                    0
+                } else if row[..cfg[0] - 1].contains(".") {
+                    0
+                } else if row
+                    .chars()
+                    .nth(cfg[0] - 1)
+                    .map(|nc| nc == '#')
+                    .unwrap_or(false)
+                {
+                    0
+                } else {
+                    // this means that the next one is either ? or . or <end>
+                    self.cached_count(
+                        row.chars().nth(cfg[0]),
+                        substr(row, cfg[0] + 1..),
+                        &cfg[1..],
+                    )
+                }
+            } else {
+                self.cached_count(Some('#'), row, cfg) + self.cached_count(Some('.'), row, cfg)
             }
         } else {
-            /* # */
-            counter += 1;
+            if cfg.is_empty() {
+                1
+            } else {
+                0
+            }
         }
     }
 
-    if counter > 0 {
-        row_groups.push(counter);
+    fn cached_count(&mut self, curr: Option<char>, row: &'a str, cfg: &'a [usize]) -> usize {
+        let key = (curr, row, cfg);
+        if let Some(result) = self.cache.get(&key) {
+            return *result;
+        } else {
+            let result = self.count(curr, row, cfg);
+            self.cache.insert(key, result);
+            return result;
+        }
     }
-
-    return row_groups;
-}
-
-fn are_vecs_equal<T: PartialEq<T>>(l: &Vec<T>, r: &Vec<T>) -> bool {
-    l.len() == r.len() && l.iter().zip(r.iter()).all(|(l, r)| l == r)
 }
 
 pub fn answer() -> usize {
-    read_lines("src/y2023/d12/input")
+    read_lines("src/y2023/d12/input_example")
         .map(|line| {
             let (row_map, contiguous_groups_raw) = line.split_once(" ").unwrap();
 
@@ -40,90 +82,18 @@ pub fn answer() -> usize {
 
             let contiguous_groups = contiguous_groups_raw
                 .split(",")
-                .map(|num_raw| num_raw.parse::<u16>().unwrap())
+                .map(|num_raw| num_raw.parse::<usize>().unwrap())
                 .collect::<Vec<_>>();
 
-            let mut possibilities = vec!["".to_string()];
-
-            let is_possible_row = |el: &String| {
-                if el.len() == row_map.len() {
-                    are_vecs_equal(&extract_groups(el), &contiguous_groups)
-                } else {
-                    let mut counter = 0;
-                    let mut last = 0;
-                    let mut nr_of_groups = 0;
-
-                    for ch in el.chars() {
-                        if ch == '.' {
-                            if counter > 0 {
-                                last = counter;
-                                nr_of_groups += 1;
-                                counter = 0;
-                            }
-                        } else {
-                            /* # */
-                            counter += 1;
-                        }
-                    }
-
-                    if counter > 0 {
-                        last = counter;
-                        nr_of_groups += 1;
-                    };
-
-                    nr_of_groups == 0
-                        || (nr_of_groups <= contiguous_groups.len()
-                            && last <= contiguous_groups[nr_of_groups - 1])
-                            && (contiguous_groups[nr_of_groups..].into_iter().sum::<u16>() as usize)
-                                < (row_map.len() - el.len())
-                }
+            let mut cache = CachedCount {
+                cache: HashMap::new(),
             };
 
-            // let mut result = 0;
-            // // idea: make this recursive instead of keeping possibilities. Why this will help?
-            // for c in row_map.chars() {}
+            let result =
+                cache.cached_count(row_map.chars().nth(0), &row_map[1..], &contiguous_groups);
 
-            // The information that the row pattern is repeated 5 times can be utilized. I can compute all basic combination that will pass check and then mix and match slices of those.
-            // eg ##???#??#?????????#? 11,6
-            // say from p1 pow there are 3 possible configurations. This means that in part two there will be at least 3^5 possible final configurations.
-            // Not true, since the first pattern can finish with # at the end this will affect the second part of the row, there are not isolated.
-            // eg ##########....###### -> ##########....################....######
-            // this not only affect 2nd row but also the first: now this is possible:
-            // eg                         ##########.......######.################ end continues da da da
-            // so I have to include configurations that does finish with # just in case
-            // ???????#?? 1,1,2 This illustrates problem well. .......#.. #.##.#.#.# #(etc). This repetition allowes extra patterns in the first part (dependent on the second)
-
-            // so maybe entirely different approach first find place for the biggest group
-            // ##???#??#?????????#? 11,6
-            // has to be at the start
-            // [###########???????#? 11,6]
-            // Then second
-            // [###########???????#? 11,6]
-
-            // DaC recursive approach
-
-            for c in row_map.chars() {
-                if c == '?' {
-                    for i in 0..possibilities.len() {
-                        let mut cp = possibilities[i].clone();
-                        cp.push('.');
-                        possibilities.push(cp);
-                        possibilities[i].push('#');
-                    }
-                } else {
-                    possibilities.iter_mut().for_each(|el| {
-                        el.push(c);
-                    });
-                }
-
-                println!("{}", possibilities.len());
-
-                //  idea: look at the number of groups
-                possibilities.retain(is_possible_row)
-            }
-
-            println!("res: {}", possibilities.len());
-            possibilities.len()
+            println!("{result}");
+            result
         })
         .sum()
 }
