@@ -1,10 +1,12 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, iter::zip};
 
 use itertools::Itertools;
 
 use crate::utils::read_lines;
 
-fn space((start, end): ((i32, i32, i32), (i32, i32, i32))) -> HashSet<(i32, i32, i32)> {
+type Brick = ((i32, i32, i32), (i32, i32, i32));
+
+fn space((start, end): Brick) -> HashSet<(i32, i32, i32)> {
     if start.0 < end.0 {
         HashSet::from_iter((start.0..=end.0).map(|i| (start.0 + i, start.1, start.2)))
     } else if start.1 < end.1 {
@@ -16,34 +18,14 @@ fn space((start, end): ((i32, i32, i32), (i32, i32, i32))) -> HashSet<(i32, i32,
     }
 }
 
-fn check_sum(bricks: &Vec<((i32, i32, i32), (i32, i32, i32))>) -> i32 {
+fn check_sum(bricks: &Vec<Brick>) -> i32 {
     bricks
         .iter()
         .map(|((s1, s2, s3), (e1, e2, e3))| s1 + s2 + s3 + e1 + e2 + e3)
         .sum::<i32>()
 }
 
-pub fn answer() -> usize {
-    let mut bricks = read_lines("src/y2023/d22/input")
-        .map(|str| {
-            let (start_raw, end_raw) = str.split_once('~').unwrap();
-
-            let start = start_raw
-                .split(',')
-                .map(|r| r.parse::<i32>().unwrap())
-                .collect_tuple::<(_, _, _)>()
-                .unwrap();
-
-            let end = end_raw
-                .split(',')
-                .map(|r| r.parse::<i32>().unwrap())
-                .collect_tuple::<(_, _, _)>()
-                .unwrap();
-
-            (start, end)
-        })
-        .collect_vec();
-
+pub fn stabilize(bricks: &mut Vec<Brick>) {
     let mut prev_check_sum = 0;
 
     loop {
@@ -75,38 +57,45 @@ pub fn answer() -> usize {
             }
         }
     }
+}
+
+pub fn initial_bricks() -> Vec<Brick> {
+    let mut bricks = read_lines("src/y2023/d22/input")
+        .map(|str| {
+            let (start_raw, end_raw) = str.split_once('~').unwrap();
+
+            let start = start_raw
+                .split(',')
+                .map(|r| r.parse::<i32>().unwrap())
+                .collect_tuple::<(_, _, _)>()
+                .unwrap();
+
+            let end = end_raw
+                .split(',')
+                .map(|r| r.parse::<i32>().unwrap())
+                .collect_tuple::<(_, _, _)>()
+                .unwrap();
+
+            (start, end)
+        })
+        .collect_vec();
+
+    stabilize(&mut bricks);
+
+    bricks
+}
+
+pub fn answer() -> usize {
+    let bricks = initial_bricks();
 
     (0..bricks.len())
         .filter(|disabled| {
-            let disabled_iter = (0..bricks.len()).filter(|i| i != disabled);
+            let mut other_bricks = bricks.clone();
+            other_bricks.remove(*disabled);
+            let other_bricks_not_stabilized = other_bricks.clone();
+            stabilize(&mut other_bricks);
 
-            // check if some brick can be lovered given brick removal
-            disabled_iter.clone().all(|i| {
-                if bricks[i].0 .2 == 1 {
-                    // stable on ground
-                    return true;
-                }
-
-                let mut current_brick = bricks[i].clone();
-                current_brick.0 .2 -= 1;
-                current_brick.1 .2 -= 1;
-
-                let current_brick_space = space(current_brick);
-
-                for j in disabled_iter.clone() {
-                    if j == i {
-                        continue;
-                    }
-
-                    if current_brick_space.intersection(&space(bricks[j])).count() != 0 {
-                        // collision exist, brick will still be stable
-                        return true;
-                    }
-                }
-
-                // no collision, brick can be moved down
-                return false;
-            })
+            zip(other_bricks_not_stabilized, other_bricks).all(|(l, r)| l == r)
         })
         .count()
 }
