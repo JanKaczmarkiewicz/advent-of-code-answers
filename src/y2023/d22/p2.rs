@@ -1,9 +1,22 @@
-use crate::utils::read_lines;
+use std::iter::zip;
 
-pub fn answer() -> i64 {
-    read_lines("src/y2022/dXX/input");
+use crate::y2023::d22::p1::{initial_bricks, stabilize};
 
-    0
+pub fn answer() -> usize {
+    let bricks = initial_bricks();
+
+    (0..bricks.len())
+        .map(|disabled| {
+            let mut other_bricks = bricks.clone();
+            other_bricks.remove(disabled);
+            let other_bricks_not_stabilized = other_bricks.clone();
+            stabilize(&mut other_bricks);
+
+            zip(other_bricks_not_stabilized, other_bricks)
+                .filter(|(l, r)| l != r)
+                .count()
+        })
+        .sum()
 }
 
 #[cfg(test)]
