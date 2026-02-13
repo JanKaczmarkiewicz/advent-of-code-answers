@@ -36,7 +36,6 @@ pub fn stabilize(bricks: &mut Vec<Brick>) {
             prev_check_sum = current_check_sum;
         }
 
-        // TODO
         for i in 0..bricks.len() {
             if bricks[i].0 .2 == 1 {
                 continue;
