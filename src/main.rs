@@ -69,6 +69,7 @@ fn main() {
     y2022::d25::answer();
 
     y2023::d5::answer();
+    y2023::d10::answer();
     y2023::d12::answer();
     y2023::d13::answer();
     y2023::d22::answer();
