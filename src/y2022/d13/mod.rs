@@ -5,7 +5,7 @@ use itertools::Itertools;
 use crate::utils::read_lines;
 
 pub fn answer() {
-    println!("Answer to day13: {}", a1());
+    println!("Answer to day13: {} {}", a1(), a2());
 }
 
 #[derive(PartialEq, Debug, Clone)]

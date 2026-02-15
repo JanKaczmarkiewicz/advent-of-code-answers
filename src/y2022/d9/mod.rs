@@ -31,35 +31,35 @@ fn parse_instruction(instruction: String) -> impl Iterator<Item = Direction> {
     (0..count).map(move |_| direction)
 }
 
-fn render(tail_visited: &HashSet<(i32, i32)>, knots: &Vec<(i32, i32)>) {
-    let mut all = tail_visited.clone();
-    all.extend(knots.iter());
+// fn render(tail_visited: &HashSet<(i32, i32)>, knots: &Vec<(i32, i32)>) {
+//     let mut all = tail_visited.clone();
+//     all.extend(knots.iter());
 
-    let min_x = all.iter().map(|(x, _)| x).min().unwrap();
-    let max_x = all.iter().map(|(x, _)| x).max().unwrap();
-    let min_y = all.iter().map(|(_, y)| y).min().unwrap();
-    let max_y = all.iter().map(|(_, y)| y).max().unwrap();
+//     let min_x = all.iter().map(|(x, _)| x).min().unwrap();
+//     let max_x = all.iter().map(|(x, _)| x).max().unwrap();
+//     let min_y = all.iter().map(|(_, y)| y).min().unwrap();
+//     let max_y = all.iter().map(|(_, y)| y).max().unwrap();
 
-    for y in *min_y..=*max_y {
-        for x in *min_x..=*max_x {
-            if let Some(index) = knots.iter().position(|knot| knot == &(x, y)) {
-                if knots.len() - 1 == index {
-                    print!("T")
-                } else if index == 0 {
-                    print!("H")
-                } else {
-                    print!("{index}")
-                }
-            } else if tail_visited.contains(&(x, y)) {
-                print!("#");
-            } else {
-                print!(".");
-            }
-        }
-        println!();
-    }
-    println!("---------");
-}
+//     for y in *min_y..=*max_y {
+//         for x in *min_x..=*max_x {
+//             if let Some(index) = knots.iter().position(|knot| knot == &(x, y)) {
+//                 if knots.len() - 1 == index {
+//                     print!("T")
+//                 } else if index == 0 {
+//                     print!("H")
+//                 } else {
+//                     print!("{index}")
+//                 }
+//             } else if tail_visited.contains(&(x, y)) {
+//                 print!("#");
+//             } else {
+//                 print!(".");
+//             }
+//         }
+//         println!();
+//     }
+//     println!("---------");
+// }
 
 fn fix_prev_knot_position(head_position: (i32, i32), prev_knot_pos: (i32, i32)) -> (i32, i32) {
     let x_distance: i32 = prev_knot_pos.0 - head_position.0;

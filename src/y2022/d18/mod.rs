@@ -77,12 +77,12 @@ fn a2() -> usize {
     let mut y_max = 0;
     let mut z_max = 0;
 
-    cords.iter().for_each(|(mut x, mut y, mut z)| {
-        x_max = x_max.max(x);
-        y_max = y_max.max(y);
-        z_max = z_max.max(z);
+    cords.iter().for_each(|(x, y, z)| {
+        x_max = x_max.max(*x);
+        y_max = y_max.max(*y);
+        z_max = z_max.max(*z);
 
-        let new_faces = get_faces((x, y, z));
+        let new_faces = get_faces((*x, *y, *z));
 
         for face in new_faces {
             if !faces.insert(face) {
@@ -132,8 +132,8 @@ fn a1() -> usize {
         ]
     };
 
-    cords.iter().for_each(|(mut x, mut y, mut z)| {
-        let new_faces = get_faces((x, y, z));
+    cords.iter().for_each(|(x, y, z)| {
+        let new_faces = get_faces((*x, *y, *z));
 
         for face in new_faces {
             if !faces.insert(face) {

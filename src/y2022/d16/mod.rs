@@ -40,7 +40,7 @@ fn get_tunnels_map() -> HashMap<String, TunnelWithCost> {
 
     let non_zero_tunnels = tunnels
         .iter()
-        .filter(|(_, v, _)| (*v > 0))
+        .filter(|(_, v, _)| *v > 0)
         .collect::<Vec<_>>();
 
     let mut tunnels_map = HashMap::new();
@@ -158,20 +158,20 @@ fn a1() -> usize {
     //     .unwrap()
 }
 
-fn compute_path_score<'a>(path: impl Iterator<Item = &'a TunnelWithCost> + Clone) -> usize {
-    let mut time: i32 = 30;
-    let mut score = 0;
+// fn compute_path_score<'a>(path: impl Iterator<Item = &'a TunnelWithCost> + Clone) -> usize {
+//     let mut time: i32 = 30;
+//     let mut score = 0;
 
-    for (prev, curr) in path.clone().zip(path.skip(1)) {
-        time -= *prev.paths.get(&curr.name).unwrap() as i32 + 1; // one for turning on velve
-        if time < 0 {
-            break;
-        }
-        score += time as usize * curr.valve_stress_release;
-    }
+//     for (prev, curr) in path.clone().zip(path.skip(1)) {
+//         time -= *prev.paths.get(&curr.name).unwrap() as i32 + 1; // one for turning on velve
+//         if time < 0 {
+//             break;
+//         }
+//         score += time as usize * curr.valve_stress_release;
+//     }
 
-    score
-}
+//     score
+// }
 
 fn a2() -> usize {
     0

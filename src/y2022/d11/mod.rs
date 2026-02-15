@@ -1,7 +1,7 @@
 use crate::utils::read;
 
 pub fn answer() {
-    println!("Answer to day11: {}", a1());
+    println!("Answer to day11: {} {}", a1(), a2());
 }
 
 #[derive(Debug, PartialEq)]

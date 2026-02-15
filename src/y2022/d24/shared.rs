@@ -116,7 +116,7 @@ pub fn answer(destinations: &[Destination]) -> i64 {
 
         valid_paths = valid_paths
             .iter()
-            .map(|(curr_x, curr_y)| actions.iter().map(move |(x, y)| ((x + curr_x, y + curr_y))))
+            .map(|(curr_x, curr_y)| actions.iter().map(move |(x, y)| (x + curr_x, y + curr_y)))
             .flatten()
             .filter(|cords| {
                 !(up_storms.contains(cords)

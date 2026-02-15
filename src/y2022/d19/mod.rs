@@ -155,10 +155,10 @@ fn compute_quality_rec(
 
     let resources = &resources + &robots;
 
-    let can_create_robots = resources >= blueprint.ore_robot
-        || resources >= blueprint.obsidian_robot
-        || resources >= blueprint.clay_robot
-        || resources >= blueprint.geode_robot;
+    // let can_create_robots = resources >= blueprint.ore_robot
+    //     || resources >= blueprint.obsidian_robot
+    //     || resources >= blueprint.clay_robot
+    //     || resources >= blueprint.geode_robot;
 
     if resources >= blueprint.ore_robot {
         let mut new_robots = robots.clone();
@@ -243,8 +243,6 @@ fn a1() -> usize {
 }
 
 fn a2() -> usize {
-    read_lines("src/y2022/d19/input");
-
     0
 }
 

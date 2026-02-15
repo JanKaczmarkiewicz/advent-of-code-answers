@@ -3,7 +3,7 @@ use itertools::Itertools;
 use crate::utils::read_lines;
 
 pub fn answer() {
-    println!("Answer to day12: {}", a1());
+    println!("Answer to day12: {} {}", a1(), a2());
 }
 
 fn a1() -> usize {

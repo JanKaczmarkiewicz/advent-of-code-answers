@@ -1,7 +1,7 @@
 use crate::utils::read_lines;
 
 pub fn answer() {
-    println!("Answer to day10: {}", a1());
+    println!("Answer to day10: {} {}", a1(), a2());
 }
 
 enum Command {
@@ -66,7 +66,7 @@ fn draw_pixel(cycle: i32, register: i32) -> () {
     print!("{}", if should_light_pixel { '#' } else { '.' });
 }
 
-pub fn a2() -> () {
+pub fn a2() -> usize {
     let instructions = read_lines("src/y2022/d10/input").map(|instruction| {
         let mut chars = instruction.split(" ");
 
@@ -102,6 +102,7 @@ pub fn a2() -> () {
             }
         }
     }
+    todo!()
 }
 
 #[cfg(test)]
@@ -115,6 +116,6 @@ mod tests {
 
     #[test]
     fn should_solve_second_problem() {
-        assert_eq!(a2(), ());
+        assert_eq!(a2(), 0);
     }
 }
