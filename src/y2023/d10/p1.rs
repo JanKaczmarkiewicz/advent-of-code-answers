@@ -4,7 +4,7 @@ use itertools::Itertools;
 
 use crate::utils::read_lines;
 
-fn get_cell(map: &Vec<Vec<char>>, (row, col): (i32, i32)) -> Option<&char> {
+pub fn get_cell(map: &Vec<Vec<char>>, (row, col): (i32, i32)) -> Option<&char> {
     if row >= 0 && col >= 0 {
         map.get(row as usize).and_then(|r| r.get(col as usize))
     } else {
@@ -23,19 +23,15 @@ fn find_start(map: &Vec<Vec<char>>) -> (i32, i32) {
     panic!()
 }
 
-pub fn answer() -> f64 {
-    let map = read_lines("src/y2023/d10/input")
-        .map(|l| l.chars().collect_vec())
-        .collect_vec();
-
-    let start = find_start(&map);
+pub fn find_loop(map: &Vec<Vec<char>>) -> HashSet<(i32, i32)> {
+    let start = find_start(map);
 
     let mut paths = vec![(HashSet::new(), start)];
 
     while let Some((mut history, current)) = paths.pop() {
         if history.contains(&current) {
             if current == start && history.len() > 2 {
-                return history.len() as f64 / 2.0;
+                return history;
             } else {
                 continue;
             }
@@ -43,13 +39,13 @@ pub fn answer() -> f64 {
 
         history.insert(current);
 
-        let c = get_cell(&map, current).unwrap();
+        let c = get_cell(map, current).unwrap();
 
         //up
         if let '|' | 'L' | 'J' | 'S' = c {
             let next = (current.0 - 1, current.1);
 
-            if let Some('|' | 'F' | '7' | 'S') = get_cell(&map, next) {
+            if let Some('|' | 'F' | '7' | 'S') = get_cell(map, next) {
                 paths.push((history.clone(), next))
             }
         }
@@ -58,7 +54,7 @@ pub fn answer() -> f64 {
         if let '|' | 'F' | '7' | 'S' = c {
             let next = (current.0 + 1, current.1);
 
-            if let Some('|' | 'L' | 'J' | 'S') = get_cell(&map, next) {
+            if let Some('|' | 'L' | 'J' | 'S') = get_cell(map, next) {
                 paths.push((history.clone(), next))
             }
         }
@@ -67,8 +63,7 @@ pub fn answer() -> f64 {
         if let '-' | 'L' | 'F' | 'S' = c {
             let next = (current.0, current.1 + 1);
 
-            println!("{:?}", get_cell(&map, next));
-            if let Some('-' | 'J' | '7' | 'S') = get_cell(&map, next) {
+            if let Some('-' | 'J' | '7' | 'S') = get_cell(map, next) {
                 paths.push((history.clone(), next))
             }
         }
@@ -77,13 +72,21 @@ pub fn answer() -> f64 {
         if let '-' | 'J' | '7' | 'S' = c {
             let next = (current.0, current.1 - 1);
 
-            if let Some('-' | 'L' | 'F' | 'S') = get_cell(&map, next) {
+            if let Some('-' | 'L' | 'F' | 'S') = get_cell(map, next) {
                 paths.push((history.clone(), next))
             }
         }
     }
 
-    0.0
+    panic!()
+}
+
+pub fn answer() -> f64 {
+    let map = read_lines("src/y2023/d10/input")
+        .map(|l| l.chars().collect_vec())
+        .collect_vec();
+
+    find_loop(&map).len() as f64 / 2.0
 }
 
 #[cfg(test)]
