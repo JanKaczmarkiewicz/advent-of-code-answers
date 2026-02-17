@@ -1,7 +1,11 @@
+use itertools::Itertools;
+
 use crate::utils::read_lines;
 
 pub fn answer() -> i64 {
-    read_lines("src/y2022/dXX/input");
+    let map = read_lines("src/y2023/d21/input_example")
+        .map(|row| row.chars().collect_vec())
+        .collect_vec();
 
     0
 }
@@ -13,6 +17,6 @@ mod tests {
 
     #[test]
     fn should_compute_solution() {
-        assert_eq!(answer(), 0);
+        assert_eq!(answer(), 3830);
     }
 }
