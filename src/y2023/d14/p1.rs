@@ -1,5 +1,3 @@
-use std::ops::Sub;
-
 use itertools::Itertools;
 
 use crate::utils::read_lines;
@@ -24,10 +22,6 @@ pub fn answer() -> usize {
                 }
             }
         }
-    }
-
-    for row in &map {
-        println!("{}", row.into_iter().join(""));
     }
 
     map.iter()
