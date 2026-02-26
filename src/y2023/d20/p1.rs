@@ -97,25 +97,24 @@ pub fn answer() -> usize {
         println!("{from} -{}-> {to}", if signal { "high" } else { "low" });
 
         i += 1;
-        let next_signal = {
-            let (m, _) = modules.get_mut(&to).unwrap();
+        let (m, outputs) = modules.get_mut(&to).unwrap();
 
-            match m {
-                Module::Broadcaster => signal,
-                Module::Conjunction(v) => {
-                    *v.get_mut(&from).unwrap() = signal;
-                    v.values().all(|e| *e)
+        let next_signal = match m {
+            Module::Broadcaster => signal,
+            Module::Conjunction(v) => {
+                *v.get_mut(&from).unwrap() = signal;
+
+                !v.values().all(|e| *e)
+            }
+            Module::FlipFlop(state) => {
+                if signal == false {
+                    *state = !*state;
+                } else {
+                    continue;
                 }
-                Module::FlipFlop(state) => {
-                    if signal == false {
-                        *state = !*state;
-                    }
-                    *state
-                }
+                *state
             }
         };
-
-        let (_, outputs) = modules.get(&to).unwrap();
 
         for dest in outputs {
             queue.push_back((to.to_string(), next_signal, dest.clone()));
