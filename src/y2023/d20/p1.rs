@@ -101,6 +101,6 @@ mod tests {
     use super::*;
     #[test]
     fn should_compute_solution() {
-        assert_eq!(answer(), 0);
+        assert_eq!(answer(), 806332748);
     }
 }
