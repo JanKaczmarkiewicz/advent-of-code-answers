@@ -14,42 +14,6 @@ fn parse_module_names(raw: &str) -> Vec<String> {
     raw.split(", ").map(|s| s.to_owned()).collect_vec()
 }
 
-// fn send_signal(
-//     modules: &mut HashMap<String, (Module, Vec<String>)>,
-//     to: &str,
-//     from: &str,
-//     signal: bool,
-// ) -> usize {
-//     let (m, o) = modules.get_mut(to).unwrap();
-
-//     let next_signal = match m {
-//         Module::Broadcaster => signal,
-//         Module::Conjunction(v) => {
-//             *v.get_mut(from).unwrap() = signal;
-//             v.values().all(|e| *e)
-//         }
-//         Module::FlipFlop(state) => {
-//             if signal == false {
-//                 *state = !*state;
-//             }
-//             *state
-//         }
-//     };
-
-//     o.clone()
-//         .iter()
-//         .map(|dest| {
-//             //button -low-> broadcaster
-//             println!(
-//                 "{from} -{}-> {to}",
-//                 if next_signal { "high" } else { "low" }
-//             );
-
-//             1 + send_signal(modules, &dest, to, next_signal)
-//         })
-//         .sum()
-// }
-
 fn get_modules() -> HashMap<String, (Module, Vec<String>)> {
     let mut conjuntion_modules = vec![];
 
@@ -76,7 +40,7 @@ fn get_modules() -> HashMap<String, (Module, Vec<String>)> {
             .filter_map(|(input_name, (_, outputs))| {
                 outputs.iter().find(|n| *n == &c_name).map(|_| input_name)
             })
-            .map(|n| (n.to_owned(), true))
+            .map(|n| (n.to_owned(), false))
             .collect();
 
         if let (Module::Conjunction(inputs), _) = modules.get_mut(&c_name).unwrap() {
@@ -91,37 +55,44 @@ fn get_modules() -> HashMap<String, (Module, Vec<String>)> {
 
 pub fn answer() -> usize {
     let modules = &mut get_modules();
-    let mut queue = VecDeque::from([("button".to_string(), false, "broadcaster".to_string())]);
-    let mut i = 0;
-    while let Some((from, signal, to)) = queue.pop_front() {
-        println!("{from} -{}-> {to}", if signal { "high" } else { "low" });
+    let mut low_signals = 0;
+    let mut high_signals = 0;
 
-        i += 1;
-        let (m, outputs) = modules.get_mut(&to).unwrap();
-
-        let next_signal = match m {
-            Module::Broadcaster => signal,
-            Module::Conjunction(v) => {
-                *v.get_mut(&from).unwrap() = signal;
-
-                !v.values().all(|e| *e)
+    for _ in 0..1000 {
+        let mut queue = VecDeque::from([("button".to_string(), false, "broadcaster".to_string())]);
+        while let Some((from, signal, to)) = queue.pop_front() {
+            // println!("{from} -{}-> {to}", if signal { "high" } else { "low" });
+            if signal {
+                high_signals += 1;
+            } else {
+                low_signals += 1;
             }
-            Module::FlipFlop(state) => {
-                if signal == false {
-                    *state = !*state;
-                } else {
-                    continue;
+
+            if let Some((m, outputs)) = modules.get_mut(&to) {
+                let next_signal = match m {
+                    Module::Broadcaster => signal,
+                    Module::Conjunction(v) => {
+                        *v.get_mut(&from).unwrap() = signal;
+                        !v.values().all(|e| *e)
+                    }
+                    Module::FlipFlop(state) => {
+                        if signal {
+                            continue;
+                        }
+                        *state = !*state;
+                        *state
+                    }
+                };
+
+                for dest in outputs {
+                    queue.push_back((to.to_string(), next_signal, dest.clone()));
                 }
-                *state
             }
-        };
-
-        for dest in outputs {
-            queue.push_back((to.to_string(), next_signal, dest.clone()));
         }
+        println!()
     }
 
-    i
+    low_signals * high_signals
 }
 
 #[cfg(test)]
