@@ -76,4 +76,5 @@ fn main() {
     y2023::d14::answer();
     y2023::d21::answer();
     y2023::d22::answer();
+    y2023::d23::answer();
 }
