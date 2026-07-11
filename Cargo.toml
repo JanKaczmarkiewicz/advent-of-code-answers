@@ -7,6 +7,7 @@ edition = "2021"
 [dependencies]
 itertools = "*"
 array-init = "*"
+petgraph = "*"
 regex = "*"
 pretty_assertions = "*"
 serde_json = "1.0"
