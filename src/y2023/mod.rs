@@ -5,6 +5,6 @@ pub mod d14;
 pub mod d20;
 pub mod d21;
 pub mod d22;
-pub mod d24;
-pub mod d25;
 pub mod d5;
+pub mod u_d24;
+pub mod u_d25;
