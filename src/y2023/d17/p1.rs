@@ -47,8 +47,6 @@ pub fn answer() -> u32 {
     let mut paths = PriorityQueue::new();
     paths.push(([(0, 0), (0, 0), (0, 0)], start), Reverse(0));
 
-    let mut best_cost = u32::MAX;
-
     while let Some(((last_steps, curr), cost)) = paths.pop() {
         for dir in get_dirs(&last_steps) {
             let mut steps_copy = last_steps.clone();
@@ -66,13 +64,8 @@ pub fn answer() -> u32 {
 
             let new_cost = cost.0 + map[current_cord.0 as usize][current_cord.1 as usize];
 
-            if best_cost <= new_cost {
-                continue;
-            }
-
             if current_cord == end {
-                best_cost = new_cost;
-                continue;
+                return new_cost;
             }
 
             paths.push_increase((steps_copy, current_cord), Reverse(new_cost));
