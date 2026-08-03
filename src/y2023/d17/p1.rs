@@ -72,7 +72,7 @@ pub fn answer() -> u32 {
         }
     }
 
-    return best_cost;
+    u32::MAX
 }
 
 #[cfg(test)]
