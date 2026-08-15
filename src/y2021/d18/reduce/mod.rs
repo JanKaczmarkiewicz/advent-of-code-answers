@@ -20,8 +20,9 @@ pub fn reduce(mut data: Data) -> Data {
 
 #[cfg(test)]
 mod tests {
+    use crate::y2021::d18::data::Data;
+
     use super::reduce;
-    use crate::a18::data::Data;
     use pretty_assertions::assert_eq;
 
     fn parse(raw: &str) -> Data {

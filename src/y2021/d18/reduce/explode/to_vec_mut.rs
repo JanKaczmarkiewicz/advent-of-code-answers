@@ -1,4 +1,4 @@
-use crate::a18::data::Data;
+use crate::y2021::d18::data::Data;
 
 pub fn to_vec_mut(d: &mut Data) -> Vec<&mut u8> {
     let mut res = vec![];
@@ -20,8 +20,9 @@ fn to_vec_mut_inner<'a>(d: &'a mut Data, res: &mut Vec<&'a mut u8>) {
 
 #[cfg(test)]
 mod tests {
-    use crate::a18::data::Data;
     use pretty_assertions::assert_eq;
+
+    use crate::y2021::d18::data::Data;
 
     use super::to_vec_mut;
 

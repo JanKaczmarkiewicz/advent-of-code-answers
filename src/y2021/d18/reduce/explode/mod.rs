@@ -32,8 +32,9 @@ pub fn explode(data: &mut Data) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::a18::data::Data;
     use pretty_assertions::assert_eq;
+
+    use crate::y2021::d18::data::Data;
 
     use super::explode;
 

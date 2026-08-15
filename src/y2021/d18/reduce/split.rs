@@ -21,8 +21,8 @@ pub fn split(data: &mut Data) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use super::super::Data;
     use super::split;
-    use crate::a18::data::Data;
     use pretty_assertions::assert_eq;
 
     fn parse(raw: &str) -> Data {

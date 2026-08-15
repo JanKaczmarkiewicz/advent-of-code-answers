@@ -1,4 +1,4 @@
-use crate::a18::data::Data;
+use crate::y2021::d18::data::Data;
 
 fn find_explosion_index_inner(d: &Data, depth: usize, index: &mut i32) -> bool {
     match d {
@@ -41,7 +41,7 @@ pub fn find_explosion_index(d: &Data) -> Option<usize> {
 mod tests {
     use pretty_assertions::assert_eq;
 
-    use crate::a18::data::Data;
+    use crate::y2021::d18::data::Data;
 
     use super::find_explosion_index;
 

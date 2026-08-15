@@ -1,4 +1,4 @@
-use crate::a18::data::Data;
+use crate::y2021::d18::data::Data;
 
 pub fn reset_at(d: &mut Data, index: usize) {
     let mut current_index = 0;
@@ -31,8 +31,9 @@ fn reset_at_inner(d: &mut Data, index: usize, current_index: &mut usize) -> bool
 
 #[cfg(test)]
 mod tests {
-    use crate::a18::data::Data;
     use pretty_assertions::assert_eq;
+
+    use crate::y2021::d18::data::Data;
 
     use super::reset_at;
 

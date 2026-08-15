@@ -1,7 +1,8 @@
 mod data;
 mod reduce;
-use crate::{a18::data::Data, utils::read};
 use reduce::reduce;
+
+use crate::{utils::read, y2021::d18::data::Data};
 
 fn magnitude(data: Data) -> u32 {
     match data {
