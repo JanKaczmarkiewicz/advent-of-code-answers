@@ -23,6 +23,7 @@ fn main() {
     y2021::d16::answer();
     y2021::d17::answer();
     y2021::d18::answer();
+    y2021::d19::answer();
 
     y2022::d1::answer();
     y2022::d2::answer();
