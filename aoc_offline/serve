@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+if [ "$#" -ne 1 ]; then
+  echo "usage: ./serve <year>" >&2
+  exit 1
+fi
+
+year=$1
+
+echo "http://localhost:8080/$year"
+
+python3 -m http.server 8080
