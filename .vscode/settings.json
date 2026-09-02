@@ -1,4 +1,5 @@
 {
+    "chat.disableAIFeatures": true,
     "rust-analyzer": {
         "runnables": {
             "extraTestBinaryArgs": [
