@@ -1,4 +1,6 @@
-pub fn answer() -> usize {}
+pub fn answer() -> usize {
+    0
+}
 
 #[cfg(test)]
 mod tests {
