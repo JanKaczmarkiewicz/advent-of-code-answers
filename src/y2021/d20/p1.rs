@@ -68,6 +68,6 @@ mod tests {
 
     #[test]
     fn should_compute_solution() {
-        assert_eq!(answer(), 0);
+        assert_eq!(answer(), 5402);
     }
 }
